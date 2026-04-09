@@ -1,19 +1,9 @@
-import React from 'react';
-import {BrowserRouter, Route, Routes, Navigate} from 'react-router-dom';
-import Login from './pages/Login';
-import AdminDashboard from './pages/AdminDashboard';
+import React from 'react'
+
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/admin-dashboard" />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-      </Routes>
-    </BrowserRouter>
+    <div>App</div>
   )
 }
 
-export default App;
-
-
+export default App
