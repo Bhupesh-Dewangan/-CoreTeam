@@ -1,7 +1,7 @@
 export const DEPARTMENTS = ["Engineering", "Human Resources", "Marketing", "Sales", "Finance", "Operations", "IT Support", "Customer Success", "Product Management", "Design"];
 
 export const dummyAdminDashboardData = {
-    role: "ADMIN",
+    role: "Admin",
     totalEmployees: 3,
     totalDepartments: 10,
     todayAttendance: 1,
@@ -9,6 +9,7 @@ export const dummyAdminDashboardData = {
 };
 
 export const dummyEmployeeDashboardData = {
+    role: "Employee",
     currentMonthAttendance: 20,
     pendingLeaves: 2,
     latestPayslip: {
