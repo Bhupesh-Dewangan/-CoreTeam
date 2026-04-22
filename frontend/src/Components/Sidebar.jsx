@@ -1,0 +1,149 @@
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { Calendar1Icon, ChevronRightIcon, DollarSignIcon, FileTextIcon, LayoutGridIcon, LogOutIcon, MenuIcon, SettingsIcon } from "lucide-react";
+import { dummyProfileData } from "../assets/dummyData";
+import { XIcon } from "lucide-react";
+import { UserIcon } from "lucide-react";
+
+function Sidebar() {
+  const { pathname } = useLocation();
+  const [userName, setUserName] = useState("");
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    setUserName(dummyProfileData.firstName + " " + dummyProfileData.lastName);
+  }, []);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  const handleLogout = () => {
+    // Implement logout logic here (e.g., clear auth tokens, redirect to login page)
+    console.log("User logged out");
+    window.location.href = "/login"; // Redirect to login page after logout
+  }
+
+  const role = "" || "Employee"; // Replace with actual role from auth context or state
+
+  const navigationLinks = [
+    { name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
+
+    role === "Admin" ?
+    { name: "Employees", href: "/employees", icon: UserIcon }:
+    { name: "Attendance", href: "/attendance", icon: Calendar1Icon },
+
+    { name: "Leaves", href: "/leave", icon: FileTextIcon },
+    { name: "Payslips", href: "/payslips", icon: DollarSignIcon },
+    { name: "Settings", href: "/settings", icon: SettingsIcon },
+  ];
+
+  const sidebarContent = (
+    <>
+      {/* Brand header */}
+      <div className="px-5 pt-6 pb-5 border-b border-white/6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <UserIcon className="text-white size-7" />
+            <div>
+              <p className="font-semibold text-[13px] text-white tracking-wide">
+                Empolyee MS
+              </p>
+              <p className="text-[11px] text-slate-500 font-medium">
+                Management System
+              </p>
+            </div>
+          </div>
+          {/* Close button for mobile */}
+          <button
+            className="text-slate-400 hover:text-white size-6 lg:hidden p-1"
+            onClick={() => setMobileOpen(false)}
+          >
+            <XIcon size={20} />
+          </button>
+        </div>
+      </div>
+
+      {/* User Profile card */}
+      {userName && (
+        <div className="mx-3 mt-4 mb-1 p-3 rounded-lg bg-white/3 border border-white/4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center ring-1 ring-white/10 shrink-0">
+              <span className="text-slate-400 text-xs font-semibold">
+                {userName.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <div className="min-w-0 "> 
+              <p className="text-[13px] font-medium text-slate-200 truncate">{userName}</p>
+              <p className="text-[11px] text-slate-500 truncate">{role === "Admin" ? "Administrator" : "Employee"}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Section label */}
+      <div className="px-5 pt-5 pb-2">
+        <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Navigation</p>
+      </div>
+
+      {/* Navigation Links */}
+      <div className="flex-1 px-3 space-y-0.5 overflow-y-auto">
+        {navigationLinks.map((link) => {
+          const isActive = pathname.startsWith(link.href);
+          return (
+            <Link key={link.name} to={link.href} className={`group flex items-center gap-3 px-3 py-2.5 rounded-md relative text-[13px] font-medium transition-all duration-150  ${isActive ? "bg-indigo-500/12 text-indigo-300" : "text-slate-300 hover:text-white hover:bg-white/4"}`}>
+              {isActive && <div className="absolute left-0 top-1/2 h-5 w-0.75 bg-indigo-500 rounded-r-full -translate-y-1/2" />}
+              <link.icon className={`w-4.25 h-4.25 shrink-0 ${isActive ? "text-indigo-300" : "text-slate-400 group-hover:text-slate-300"}`} />
+              <span className="flex-1">{link.name}</span>
+              {isActive && <ChevronRightIcon className="w-3.5 h-3.5 text-indigo-500/50" />}
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* logout */}
+      <div className="p-3 border-t border-white/6">
+        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-[13px] font-medium text-slate-400 hover:text-rose-400 hover:bg-rose-500/8 transition-all duration-150">
+          <LogOutIcon className="w-4.25 h-4.25 " onClick={handleLogout}/>
+          <span>Logout</span>
+        </button>
+      </div>
+
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile Hamburger Menu */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-slate-900 text-white rounded-lg shadow-lg border border-white/10"
+      >
+        <MenuIcon size={30} />
+      </button>
+
+      {/* Mobile Overlay */}
+      {mobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"
+          onClick={() => setMobileOpen(false)}
+        ></div>
+      )}
+
+      {/* Sidebar Desktop */}
+      <aside className="hidden lg:flex flex-col h-full w-65 bg-linear-to-b from-slate-900 via-slate-900 to-slate-950 text-white shrink-0 border-r border-white/4">
+        {sidebarContent}
+      </aside>
+
+      {/* Sidebar Mobile */}
+      <aside
+        className={`lg:hidden fixed inset-y-0 left-0 w-72 bg-linear-to-b from-slate-900 via-slate-900 to-slate-950 text-white z-50 flex flex-col transform transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        {sidebarContent}
+      </aside>
+    </>
+  );
+}
+
+export default Sidebar;
