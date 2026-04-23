@@ -34,7 +34,7 @@ function Sidebar() {
     window.location.href = "/login"; // Redirect to login page after logout
   };
 
-  const role = "Admin" || "Employee"; // Replace with actual role from auth context or state
+  const role = "" || "Employee"; // Replace with actual role from auth context or state
 
   const navigationLinks = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },

@@ -21,11 +21,11 @@ function Employees() {
     setTimeout(() => {
       setLoading(false);
     }, 1000);
-  }, []);
+  }, [selectedDepartment]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const filteredEmployees = employees.filter((employee) => `${employee.firstName} ${employee.lastName} ${employee.position}`.toLowerCase().includes(searchTerm.toLowerCase()))
 
