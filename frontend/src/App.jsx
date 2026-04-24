@@ -48,7 +48,7 @@ function App() {
           <Route path="/payslips" element={<PaySlips />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
-        <Route path="/print/payslips/:id" element={<PrintPaySlips />} />
+        <Route path="/print/payslip/:id" element={<PrintPaySlips />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </>

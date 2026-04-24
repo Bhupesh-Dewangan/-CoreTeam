@@ -49,6 +49,7 @@ function PaySlipList({ payslips, isAdmin }) {
                                                 <Download className='w-3 h-3 mr-1.5' />
                                                 Download
                                             </button>
+
                                         </td>
 
                                     </tr>
