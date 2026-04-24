@@ -10,6 +10,7 @@ export const dummyAdminDashboardData = {
 
 export const dummyEmployeeDashboardData = {
     role: "Employee",
+
     currentMonthAttendance: 20,
     pendingLeaves: 2,
     latestPayslip: {
