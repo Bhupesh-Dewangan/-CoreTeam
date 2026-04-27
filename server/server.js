@@ -5,7 +5,10 @@ import connectDB from "./config/db.js";
 import dotenv from "dotenv"
 import authRoutes from "./Routes/authRoutes.js";
 import employeeRoutes from "./Routes/employeeRoutes.js";
-dotenv.config()
+import profileRoutes from "./Routes/profileRoutes.js";
+
+dotenv.config();
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 
@@ -19,6 +22,7 @@ app.get("/", (req, res) => {
 });
 app.use("/api/auth", authRoutes);
 app.use("/api/employees", employeeRoutes);
+app.use("/api/profile", profileRoutes);
 
 await connectDB();
 app.listen(PORT, () => {
