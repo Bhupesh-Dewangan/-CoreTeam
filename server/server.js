@@ -9,7 +9,7 @@ import profileRoutes from "./Routes/profileRoutes.js";
 import attendanceRoutes from "./Routes/attendanceRoutes.js";
 import leaveRoutes from "./Routes/leaveRoutes.js";
 import payslipRoutes from "./Routes/payslipsRoutes.js";
-
+import dashboardRoutes from "./Routes/dashboardRoutes.js";
 dotenv.config();
 
 const app = express();
@@ -29,6 +29,7 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/leave", leaveRoutes);
 app.use("/api/payslips", payslipRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 await connectDB();
 app.listen(PORT, () => {
