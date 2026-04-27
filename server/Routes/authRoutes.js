@@ -1,0 +1,11 @@
+import { Router } from "express";
+import { login, getSession, changePassword } from "../Controllers/authController.js";
+import { protect } from "../Middleware/auth.js";
+
+const authRouter = Router();
+
+authRouter.post("/login", login);
+authRouter.get("/session", protect, getSession);
+authRouter.post("/change-password", protect, changePassword);
+
+export default authRouter;
