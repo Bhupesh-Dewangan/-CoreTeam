@@ -7,6 +7,8 @@ import authRoutes from "./Routes/authRoutes.js";
 import employeeRoutes from "./Routes/employeeRoutes.js";
 import profileRoutes from "./Routes/profileRoutes.js";
 import attendanceRoutes from "./Routes/attendanceRoutes.js";
+import leaveRoutes from "./Routes/leaveRoutes.js";
+import payslipRoutes from "./Routes/payslipsRoutes.js";
 
 dotenv.config();
 
@@ -25,6 +27,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/attendance", attendanceRoutes);
+app.use("/api/leave", leaveRoutes);
+app.use("/api/payslips", payslipRoutes);
 
 await connectDB();
 app.listen(PORT, () => {
