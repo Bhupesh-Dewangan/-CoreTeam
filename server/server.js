@@ -6,6 +6,7 @@ import dotenv from "dotenv"
 import authRoutes from "./Routes/authRoutes.js";
 import employeeRoutes from "./Routes/employeeRoutes.js";
 import profileRoutes from "./Routes/profileRoutes.js";
+import attendanceRoutes from "./Routes/attendanceRoutes.js";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/attendance", attendanceRoutes);
 
 await connectDB();
 app.listen(PORT, () => {
