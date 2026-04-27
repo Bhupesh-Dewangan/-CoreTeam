@@ -1,6 +1,6 @@
 import express from "express";
 import { clockInOut, getAttendance } from "../Controllers/attendanceController.js";
-import { protect } from "../Middlewares/auth.js";
+import { protect } from "../Middleware/auth.js";
 
 const router = express.Router();
 
