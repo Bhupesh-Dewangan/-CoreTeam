@@ -38,7 +38,7 @@ export const getPayslips = async (req, res) => {
         if (isAdmin) {
             const payslips = await Payslip.find().populate("employeeId").sort({ createdAt: -1 });
             const data = payslips.map((p) => {
-                const obj = p.to0bject();
+                const obj = p.toObject();
                 return {
                     ...obj,
                     id: obj._id.toString(),

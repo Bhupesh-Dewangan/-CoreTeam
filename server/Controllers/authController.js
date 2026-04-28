@@ -2,6 +2,7 @@ import User from "../Models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+
 // Login for Employee and Admin
 // POST /api/auth/login
 

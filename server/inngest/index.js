@@ -101,7 +101,7 @@ const leaveApplicationReminder = inngest.createFunction(
 
 // Cron: check attendance at 11:30 AM and send reminder to employee
 const attendanceReminderCron = inngest.createFunction(
-    { id: "attendance-reminder-cron", triggers: { cron: "0 0 6 * * *" } },
+    { id: "attendance-reminder-cron", triggers: { cron: "0 6 * * *" } },
     async ({ step }) => {
 
         // Step 1: Get today's date range (IST)
@@ -124,7 +124,7 @@ const attendanceReminderCron = inngest.createFunction(
             }).lean();
             return employees.map((e) => ({
                 _id: e._id.toString(),
-                firstName: e.firstName, lastName: e.lastName, email: e.email
+                firstName: e.firstName, lastName: e.lastName, email: e.email, department: e.department
             }))
 
         })

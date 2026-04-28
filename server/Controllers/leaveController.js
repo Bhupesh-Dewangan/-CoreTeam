@@ -1,5 +1,7 @@
 
-
+import LeaveApplication from "../Models/LeaveApplication.js";
+import Employee from "../Models/Employee.js";
+import { inngest } from "../inngest/index.js";
 
 // Apply for leave
 // POST /api/leave
@@ -71,7 +73,7 @@ export const getLeaves = async (req, res) => {
             const leaves = await LeaveApplication.find(where).
                 populate("employeeId").sort({ createdAt: -1 });
             const data = leaves.map((leave) => {
-                const obj = leave.to0bject();
+                const obj = leave.toObject();
                 return {
                     ...obj,
                     id: obj._id.toString(),
