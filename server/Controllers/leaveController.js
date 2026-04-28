@@ -44,6 +44,14 @@ export const applyLeave = async (req, res) => {
             reason,
             status: "Pending"
         });
+
+        await inngest.send({
+            name: "leave/pending",
+            data: {
+                leaveApplicationId: leave._id,
+            }
+        });
+
         return res.status(200).json({ message: "Leave applied successfully", success: true, data: leave });
     } catch (error) {
         console.error("Error in applying for leave:", error);

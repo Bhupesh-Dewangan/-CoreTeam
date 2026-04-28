@@ -3,6 +3,11 @@ import cors from "cors";
 import multer from "multer";
 import connectDB from "./config/db.js";
 import dotenv from "dotenv"
+
+import { serve } from "inngest/express";
+import { inngest, functions } from "./inngest/index.js"
+
+// Routes
 import authRoutes from "./Routes/authRoutes.js";
 import employeeRoutes from "./Routes/employeeRoutes.js";
 import profileRoutes from "./Routes/profileRoutes.js";
@@ -30,6 +35,8 @@ app.use("/api/attendance", attendanceRoutes);
 app.use("/api/leave", leaveRoutes);
 app.use("/api/payslips", payslipRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+
+app.use("/api/inngest", serve({ client: inngest, functions }));
 
 await connectDB();
 app.listen(PORT, () => {
