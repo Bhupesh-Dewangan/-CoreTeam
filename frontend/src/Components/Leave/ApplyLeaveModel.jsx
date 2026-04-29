@@ -1,5 +1,5 @@
 import { CalendarDays, X, FileText, AlignJustify, Loader2, Send } from 'lucide-react';
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState } from 'react'
 import axiosInstance from '../../api/axios';
 import { toast } from 'react-toastify';
 
@@ -21,11 +21,15 @@ function ApplyLeaveModel({ open, onClose, onSuccess }) {
         const data = Object.fromEntries(formData.entries())
 
         try {
-            await axiosInstance.post('/leave', data)
+            await axiosInstance.post('/leave/apply', data)
             onSuccess();
             onClose();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to apply for leave")
+            toast.error(
+                err.response?.data?.error ||
+                err.response?.data?.message ||
+                "Failed to apply for leave"
+            )
         }
     }
 

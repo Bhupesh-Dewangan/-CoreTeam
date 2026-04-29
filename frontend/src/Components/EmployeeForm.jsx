@@ -1,5 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { Loader2Icon } from 'lucide-react';
+import axiosInstance from '../api/axios';
+import { toast } from 'react-toastify';
+import { DEPARTMENTS } from '../assets/dummyData';
 
 function EmployeeForm({ initialData, onSuccess, onCancel }) {
     const navigate = useNavigate();
@@ -12,7 +16,8 @@ function EmployeeForm({ initialData, onSuccess, onCancel }) {
         const formData = new FormData(e.currentTarget);
         if (isEditMode) {
             const pwd = formData.get('password');
-            if (pwd) {
+            // If password is empty, remove it so backend won't try to hash/update it.
+            if (!pwd) {
                 formData.delete('password');
             }
         }
@@ -24,11 +29,15 @@ function EmployeeForm({ initialData, onSuccess, onCancel }) {
             const res = await axiosInstance[method](url, formData);
 
             onSuccess ? onSuccess() : navigate('/dashboard/employees');
-            toast.success(res.data.message);
+            toast.success(res.data?.message || 'Employee saved successfully');
 
         } catch (error) {
             console.error(error);
-            toast.error(error.response?.data?.error || 'Failed to save employee');
+            toast.error(
+                error.response?.data?.error ||
+                error.response?.data?.message ||
+                'Failed to save employee'
+            );
         } finally {
             setLoading(false);
         }
@@ -45,27 +54,39 @@ function EmployeeForm({ initialData, onSuccess, onCancel }) {
                     {/* First Name */}
                     <div>
                         <label htmlFor="firstName" className="block mb-2">First Name</label>
-                        <input type="text" id="firstName" required defaultValue={initialData?.firstName || ''} />
+                        <input type="text" id="firstName" name="firstName" required defaultValue={initialData?.firstName || ''} />
                     </div>
                     {/* Last Name */}
                     <div>
                         <label htmlFor="lastName" className="block mb-2">Last Name</label>
-                        <input type="text" id="lastName" required defaultValue={initialData?.lastName || ''} />
+                        <input
+                            type="text"
+                            id="lastName"
+                            name="lastName"
+                            required={!isEditMode}
+                            defaultValue={initialData?.lastName || ''}
+                        />
                     </div>
                     {/* Phone Number  */}
                     <div>
                         <label htmlFor="phoneNumber" className="block mb-2">Phone Number</label>
-                        <input type="text" id="phoneNumber" required defaultValue={initialData?.phoneNumber || ''} />
+                        <input
+                            type="text"
+                            id="phoneNumber"
+                            name="phone"
+                            required={!isEditMode}
+                            defaultValue={initialData?.phone ?? initialData?.phoneNumber ?? ''}
+                        />
                     </div>
                     {/* Join Date  */}
                     <div>
                         <label htmlFor="joinDate" className="block mb-2">Join Date</label>
-                        <input type="date" id="joinDate" required defaultValue={initialData?.joinDate ? new Date(initialData.joinDate).toISOString().split('T')[0] : ''} />
+                        <input type="date" id="joinDate" name="joinDate" required defaultValue={initialData?.joinDate ? new Date(initialData.joinDate).toISOString().split('T')[0] : ''} />
                     </div>
                     {/* Bio */}
                     <div className="sm:col-span-2">
                         <label htmlFor="bio" className="block mb-2">Bio (optional)</label>
-                        <textarea id="bio" rows="3" className="resize-none" defaultValue={initialData?.bio || ''} placeholder="Brief description..."></textarea>
+                        <textarea id="bio" name="bio" rows="3" className="resize-none" defaultValue={initialData?.bio || ''} placeholder="Brief description..."></textarea>
                     </div>
                 </div>
             </div>
@@ -78,7 +99,7 @@ function EmployeeForm({ initialData, onSuccess, onCancel }) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm text-slate-700">
                     <div>
                         <label className='block mb-2'>Department</label>
-                        <select id="department" defaultValue={initialData?.department || ''}>
+                        <select id="department" name="department" defaultValue={initialData?.department || ''}>
                             <option value="">Select Department</option>
                             {DEPARTMENTS.map((department) => (
                                 <option key={department} value={department}>
@@ -91,24 +112,24 @@ function EmployeeForm({ initialData, onSuccess, onCancel }) {
 
                     <div>
                         <label htmlFor="position" className='block mb-2'>Position</label>
-                        <input type="text" id="position" required defaultValue={initialData?.position || ''} />
+                        <input type="text" id="position" name="position" required defaultValue={initialData?.position || ''} />
                     </div>
                     <div>
                         <label htmlFor="basicSalary" className='block mb-2'>Basic Salary</label>
-                        <input type="number" id="basicSalary" required min={0} steps={0.01} defaultValue={initialData?.basicSalary || 0} />
+                        <input type="number" id="basicSalary" name="basicSalary" required min={0} step={0.01} defaultValue={initialData?.basicSalary || 0} />
                     </div>
                     <div>
                         <label htmlFor="allowances" className='block mb-2'>Allowances</label>
-                        <input type="number" id="allowances" required min={0} steps={0.01} defaultValue={initialData?.allowances || 0} />
+                        <input type="number" id="allowances" name="allowances" required min={0} step={0.01} defaultValue={initialData?.allowances || 0} />
                     </div>
                     <div>
                         <label htmlFor="deductions" className='block mb-2'>Deductions</label>
-                        <input type="number" id="deductions" required min={0} steps={0.01} defaultValue={initialData?.deductions || 0} />
+                        <input type="number" id="deductions" name="deductions" required min={0} step={0.01} defaultValue={initialData?.deductions || 0} />
                     </div>
                     {isEditMode && (
                         <div>
                             <label htmlFor="employmentStatus" className='block mb-2'>Status</label>
-                            <select id="employmentStatus" required defaultValue={initialData?.employmentStatus}>
+                            <select id="employmentStatus" name="employmentStatus" required defaultValue={initialData?.employmentStatus}>
                                 <option value="Active">Active</option>
                                 <option value="Inactive">Inactive</option>
                             </select>
@@ -125,26 +146,30 @@ function EmployeeForm({ initialData, onSuccess, onCancel }) {
                     {/* Username */}
                     <div className='sm:col-span-2'>
                         <label htmlFor="workEmail" className="block mb-2">Work Email</label>
-                        <input type="email" id="workEmail" required defaultValue={initialData?.email} />
+                        <input type="email" id="workEmail" name="email" required defaultValue={initialData?.email} />
                     </div>
                     {!isEditMode && (
                         <div>
                             <label htmlFor="password" className="block mb-2">Temporary Password</label>
-                            <input type="password" id="password" required />
+                            <input type="password" id="password" name="password" required />
                         </div>
                     )}
                     {isEditMode && (
                         <div>
                             <label htmlFor="password" className="block mb-2">Change Password (optional)</label>
-                            <input type="password" id="password"
+                            <input type="password" id="password" name="password"
                                 placeholder='Leave blank to keep current password' />
                         </div>
                     )}
                     <div>
                         <label htmlFor="password" className="block mb-2">System Role</label>
-                        <select name="role" id="systemRole" defaultValue={initialData?.role || 'employee'}>
-                            <option value="admin">Admin</option>
-                            <option value="employee">Employee</option>
+                        <select
+                            name="role"
+                            id="systemRole"
+                            defaultValue={initialData?.role || 'Employee'}
+                        >
+                            <option value="Admin">Admin</option>
+                            <option value="Employee">Employee</option>
                         </select>
                     </div>
 

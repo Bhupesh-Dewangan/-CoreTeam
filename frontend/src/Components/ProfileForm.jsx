@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { Loader2, User, Save } from 'lucide-react'
 import axiosInstance from '../api/axios'
-import { toast } from 'react-toastify'
 
 const ProfileForm = ({ initialData, onSuccess }) => {
     const [loading, setLoading] = useState(false)

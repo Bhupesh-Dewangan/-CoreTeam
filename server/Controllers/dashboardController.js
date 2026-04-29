@@ -20,7 +20,7 @@ export const getDashboard = async (req, res) => {
                         }
 
                     }),
-                    LeaveApplication.countDocuments({ status: "PENDING" })
+                    LeaveApplication.countDocuments({ status: "Pending" })
                 ]);
 
             return res.status(200).json({

@@ -5,6 +5,7 @@ import EmployeeForm from '../Components/EmployeeForm';
 import axiosInstance from '../api/axios';
 import { toast } from 'react-toastify';
 import Loading from '../Components/Loading'
+import { DEPARTMENTS } from '../assets/dummyData';
 
 
 function Employees() {

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from "react";
 import axiosInstance from "../api/axios";
 import { toast } from "react-toastify";
@@ -20,9 +21,11 @@ export function AuthProvider({ children }) {
         }
         try {
             const { data } = await axiosInstance.get("/auth/session")
-            setUser(data)
-        } catch (error) {
+            // Backend response shape: { success: true, session: { userId, role, email } }
+            setUser(data?.session || null)
+        } catch (err) {
             // Token is invalid or expired → clean up
+            console.error(err);
             localStorage.removeItem("token")
             setUser(null)
             setToken(null)

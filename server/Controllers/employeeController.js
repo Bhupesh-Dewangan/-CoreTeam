@@ -11,7 +11,11 @@ export const getEmployees = async (req, res) => {
         const where = {};
         if (department) where.department = department;
 
-        const employees = (await Employee.find(where)).sort({ createdAt: -1 }).populate("userId", "email role").lean();
+        // `Array.sort` expects a compare function; sort on the mongoose query instead.
+        const employees = await Employee.find(where)
+            .populate("userId", "email role")
+            .sort({ createdAt: -1 })
+            .lean();
 
         const result = employees.map((emp) => ({
             ...emp,
@@ -90,19 +94,24 @@ export const updateEmployee = async (req, res) => {
             return res.status(404).json({ success: false, message: "Employee not found" });
         }
 
-        await Employee.findByIdAndUpdate(id, {
+        const updateData = {
+            // These are expected to be provided by the form.
             firstName,
-            lastName,
             email,
-            phone,
             position,
-            department: department || "Engineering",
-            basicSalary: Number(basicSalary) || 0,
-            allowances: Number(allowances) || 0,
-            deductions: Number(deductions) || 0,
-            employmentStatus: employmentStatus || "Active",
-            bio: bio || ""
-        });
+            department: department && String(department).trim() ? department : (employee.department || "Engineering"),
+            basicSalary: basicSalary !== undefined && basicSalary !== '' ? Number(basicSalary) : (employee.basicSalary ?? 0),
+            allowances: allowances !== undefined && allowances !== '' ? Number(allowances) : (employee.allowances ?? 0),
+            deductions: deductions !== undefined && deductions !== '' ? Number(deductions) : (employee.deductions ?? 0),
+            employmentStatus: employmentStatus && String(employmentStatus).trim() ? employmentStatus : (employee.employmentStatus || "Active"),
+        };
+
+        // Optional fields: if blank/omitted, keep old values.
+        if (lastName !== undefined && String(lastName).trim() !== '') updateData.lastName = lastName;
+        if (phone !== undefined && String(phone).trim() !== '') updateData.phone = phone;
+        if (bio !== undefined && String(bio).trim() !== '') updateData.bio = bio;
+
+        await Employee.findByIdAndUpdate(id, updateData);
 
         // Update user record
         const userUpdate = { email };

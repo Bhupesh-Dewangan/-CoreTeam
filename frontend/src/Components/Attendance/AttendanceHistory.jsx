@@ -31,7 +31,7 @@ function AttendanceHistory({ history }) {
                             history.map((record) => {
                                 const dayType = getDayTypeDisplay(record)
                                 return (
-                                    < tr key={record._id || record.id} >
+                                    <tr key={record._id || record.id} >
                                         <td className='px-6 py-4 font-medium text-slate-900'>{format(new Date(record.date), 'MMM dd, yyyy')}</td>
                                         <td className='px-6 py-4 text-slate-600'>
                                             {record.checkIn ?
@@ -52,7 +52,7 @@ function AttendanceHistory({ history }) {
                                             </span> : "-"}
                                         </td>
                                         <td className='px-6 py-4'>
-                                            <span className={`badge ${record.status === 'PRESENT' ? 'badge-success' : record.status === 'LATE' ? 'badge-warning' : 'badge-danger'}`}>
+                                            <span className={`badge ${record.status === 'Present' ? 'badge-success' : record.status === 'Late' ? 'badge-warning' : 'badge-danger'}`}>
                                                 {record.status}
                                             </span>
                                         </td>

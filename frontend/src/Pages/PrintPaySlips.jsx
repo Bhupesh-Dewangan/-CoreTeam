@@ -11,7 +11,13 @@ function PrintPaySlips() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    axiosInstance.get(`/payslips/${id}`).then(res => setPayslip(res.data)).catch(err => toast.error(err?.response?.data?.error || err?.message)).finally(() => setLoading(false))
+    axiosInstance
+      .get(`/payslips/${id}`)
+      .then((res) => setPayslip(res.data?.data || null))
+      .catch((err) =>
+        toast.error(err?.response?.data?.error || err?.message)
+      )
+      .finally(() => setLoading(false));
   }, [id])
 
   if (loading) return <Loading />

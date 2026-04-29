@@ -3,12 +3,10 @@ import Loading from '../Components/Loading'
 import { Lock } from 'lucide-react';
 import ProfileForm from '../Components/ProfileForm'
 import ChangePasswordModal from '../Components/ChangePasswordModal';
-import { useAuth } from '../context/authContext';
 import axiosInstance from '../api/axios';
 import { toast } from 'react-toastify';
 
 function Settings() {
-  const { user } = useAuth()
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);

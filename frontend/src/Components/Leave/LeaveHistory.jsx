@@ -58,13 +58,13 @@ function LeaveHistory({ leaves, isAdmin, onUpdate }) {
                                             {leave.reason}
                                         </td>
                                         <td >
-                                            <span className={`badge ${leave.status === "APPROVED" ? "badge-success" : leave.status === "PENDING" ? "badge-warning" : "badge-danger"}`}>{leave.status}</span>
+                                            <span className={`badge ${leave.status === "Approved" ? "badge-success" : leave.status === "Pending" ? "badge-warning" : "badge-danger"}`}>{leave.status}</span>
                                         </td>
                                         {isAdmin && (
                                             <td>
-                                                {leave.status === "PENDING" && (
+                                                {leave.status === "Pending" && (
                                                     <div className='flex justify-center gap-2' >
-                                                        <button onClick={() => handleStatusUpdate(leave._id || leave.id, "APPROVED")}
+                                                        <button onClick={() => handleStatusUpdate(leave._id || leave.id, "Approved")}
                                                             disabled={!!processing}
                                                             className='p-1.5 rounded-md bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors '>
                                                             {processing === (leave._id || leave.id) ?
@@ -72,7 +72,7 @@ function LeaveHistory({ leaves, isAdmin, onUpdate }) {
                                                                 <Check className="w-4 h-4" />
                                                             }
                                                         </button>
-                                                        <button onClick={() => handleStatusUpdate(leave._id || leave.id, "REJECTED")}
+                                                        <button onClick={() => handleStatusUpdate(leave._id || leave.id, "Rejected")}
                                                             disabled={!!processing}
                                                             className='p-1.5 rounded-md bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors '>
                                                             {processing === (leave._id || leave.id) ?

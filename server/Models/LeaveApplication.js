@@ -8,7 +8,9 @@ const leaveApplicationSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ["Sick", "Casual", "Annual"],
+        // Frontend submits uppercase values (SICK/CASUAL/ANNUAL)
+        // Keep both variants to avoid validation errors.
+        enum: ["Sick", "Casual", "Annual", "SICK", "CASUAL", "ANNUAL"],
         required: true
     },
     startDate: {

@@ -20,9 +20,8 @@ function Leave() {
 
   const fetchLeaves = useCallback(async () => {
     try {
-      const res = await axiosInstance.get('/leaves');
-      const data = res.data;
-      setLeaves(data);
+      const res = await axiosInstance.get('/leave');
+      setLeaves(res.data.data || []);
       if (res.data.employee?.isDeleted) {
         setIsDeleted(true);
       }
@@ -40,10 +39,10 @@ function Leave() {
 
   if (loading) return <Loading />
 
-  const approvedLeaves = leaves.filter((l) => l.status === 'APPROVED');
-  const sickCount = leaves.filter((l) => l.status === 'SICK').length;
-  const casualCount = leaves.filter((l) => l.status === 'CASUAL').length;
-  const annualCount = leaves.filter((l) => l.status === 'ANNUAL').length;
+  // The backend stores leave type in `type` (CASUAL/SICK/ANNUAL) and decision in `status` (Pending/Approved/Rejected)
+  const sickCount = leaves.filter((l) => l.type === 'SICK').length;
+  const casualCount = leaves.filter((l) => l.type === 'CASUAL').length;
+  const annualCount = leaves.filter((l) => l.type === 'ANNUAL').length;
 
   const leaveStats = [
     { label: 'Sick Leave', value: sickCount, icon: ThermometerIcon },

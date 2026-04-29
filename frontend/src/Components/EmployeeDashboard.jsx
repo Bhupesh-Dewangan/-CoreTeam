@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 
 
 function EmployeeDashboard({ data }) {
-  const emp = data.employee;
+  const emp = data?.employee || {};
 
   const cards = [
     {
@@ -27,7 +27,7 @@ function EmployeeDashboard({ data }) {
     {
       icon: DollarSignIcon,
       value: data.latestPayslip
-        ? `$${data.latestPayslip.netSalary?.toLocaleString()}`
+        ? `₹${data.latestPayslip.netSalary?.toLocaleString()}`
         : "N/A",
       title: "Latest Payslip",
       subtitle: "Most recent payout",
@@ -37,9 +37,9 @@ function EmployeeDashboard({ data }) {
   return (
     <div className="animate-fade-in">
       <div className="page-header">
-        <h1 className="page-title">Welcome, {emp.firstName}!</h1>
+        <h1 className="page-title">Welcome, {emp.firstName || "Employee"}!</h1>
         <p className="page-subtitle">
-          {emp.position} - {emp.department || "Department not specified"}
+          {emp.position ? `${emp.position} - ` : ""}{emp.department || "Department not specified"}
         </p>
       </div>
 

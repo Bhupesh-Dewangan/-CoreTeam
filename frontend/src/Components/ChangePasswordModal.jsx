@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { LockIcon, X } from 'lucide-react'
+import { EyeIcon, EyeOffIcon, LockIcon, X } from 'lucide-react'
 import axiosInstance from '../api/axios'
 import { Loader2Icon } from 'lucide-react';
 
@@ -7,18 +7,20 @@ import { Loader2Icon } from 'lucide-react';
 const ChangePasswordModal = ({ open, onClose }) => {
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState({ type: "", text: "" })
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+    const [showNewPassword, setShowNewPassword] = useState(false)
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true)
         setMessage({ type: "", text: "" });
         const formData = new FormData(e.currentTarget)
-        const currentPassword = formData.get("currentPassword");
+        const oldPassword = formData.get("oldPassword");
         const newPassword = formData.get("newPassword");
 
         try {
             const { data } = await axiosInstance.post("/auth/change-password",
-                { currentPassword, newPassword });
+                { oldPassword, newPassword });
             if (!data.success) throw new Error(data.error || "Failed")
             setMessage({ type: "success", text: "Password changed successfully" });
             e.target.reset();
@@ -58,11 +60,49 @@ const ChangePasswordModal = ({ open, onClose }) => {
 
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">Current Password</label>
-                        <input type="password" name="currentPassword" required />
+                        <div className="relative">
+                            <input
+                                type={showCurrentPassword ? "text" : "password"}
+                                name="oldPassword"
+                                required
+                                className="w-full pr-11 outline-none"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowCurrentPassword((prev) => !prev)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                                aria-label={showCurrentPassword ? "Hide current password" : "Show current password"}
+                            >
+                                {showCurrentPassword ? (
+                                    <EyeOffIcon size={18} />
+                                ) : (
+                                    <EyeIcon size={18} />
+                                )}
+                            </button>
+                        </div>
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">New Password</label>
-                        <input type="password" name="newPassword" required />
+                        <div className="relative">
+                            <input
+                                type={showNewPassword ? "text" : "password"}
+                                name="newPassword"
+                                required
+                                className="w-full pr-11 outline-none"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowNewPassword((prev) => !prev)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                                aria-label={showNewPassword ? "Hide new password" : "Show new password"}
+                            >
+                                {showNewPassword ? (
+                                    <EyeOffIcon size={18} />
+                                ) : (
+                                    <EyeIcon size={18} />
+                                )}
+                            </button>
+                        </div>
                     </div>
                     <div className='flex gap-3 pt-2'>
                         <button type="button" onClick={onClose} className="btn-secondary flex-1">

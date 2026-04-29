@@ -11,8 +11,8 @@ function EmployeeCard({ employee, onDelete, onEdit }) {
             await axiosInstance.delete(`/employees/${employee.id}`);
             onDelete();
             toast.success('Employee deleted successfully');
-        } catch (error) {
-            toast.error('Failed to delete employee');
+        } catch (err) {
+            toast.error(err?.response?.data?.error || 'Failed to delete employee');
         }
     }
 

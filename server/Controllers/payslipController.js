@@ -1,4 +1,5 @@
 import Payslip from "../Models/Payslips.js";
+import Employee from "../Models/Employee.js";
 
 // Create payslip
 // POST /api/payslips
@@ -55,6 +56,15 @@ export const getPayslips = async (req, res) => {
 
             const payslips = await Payslip.find({ employeeId: employee._id }).sort({ createdAt: -1 });
 
+            const data = payslips.map((p) => {
+                const obj = p.toObject();
+                return {
+                    ...obj,
+                    id: obj._id.toString(),
+                    employeeId: obj.employeeId?.toString(),
+                }
+            });
+
             res.status(200).json({ message: "Payslips fetched successfully", success: true, data });
         }
     } catch (error) {
@@ -68,9 +78,22 @@ export const getPayslips = async (req, res) => {
 // GET /api/payslips/:id
 export const getPayslipById = async (req, res) => {
     try {
-        const payslip = await Payslip.findById(req.params.id).populate
-            ("employeeId").lean();
+        const session = req.session;
+        const isAdmin = session.role === "Admin";
 
+        let payslipQuery = Payslip.findById(req.params.id).populate("employeeId").lean();
+
+        // Non-admin users can only access their own payslips.
+        if (!isAdmin) {
+            const employee = await Employee.findOne({ userId: session.userId }).lean();
+            if (!employee) return res.status(404).json({ error: "Not found" });
+
+            payslipQuery = Payslip.findOne({ _id: req.params.id, employeeId: employee._id })
+                .populate("employeeId")
+                .lean();
+        }
+
+        const payslip = await payslipQuery;
         if (!payslip) return res.status(404).json({ error: "Not found" });
 
         const result = {

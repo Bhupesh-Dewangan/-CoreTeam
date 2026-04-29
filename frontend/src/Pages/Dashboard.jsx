@@ -11,9 +11,21 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axiosInstance.get('/dashboard').then((res) => { setData(res.data) }).catch((err) => { toast.error(err.response?.data?.error || err.message || "Failed to load dashboard data"); }).finally(() => {
+    axiosInstance
+      .get("/dashboard")
+      .then((res) => {
+        // Backend response shape:
+        // { success: true, data: { role, ...counts } }
+        setData(res.data?.data || null);
+      })
+      .catch((err) => {
+        toast.error(
+          err.response?.data?.error || err.message || "Failed to load dashboard data"
+        );
+      })
+      .finally(() => {
       setLoading(false);
-    })
+      });
   }, []);
 
 
