@@ -1,5 +1,7 @@
 import { CalendarDays, X, FileText, AlignJustify, Loader2, Send } from 'lucide-react';
 import React, { useState, useEffect, useCallback } from 'react'
+import axiosInstance from '../../api/axios';
+import { toast } from 'react-toastify';
 
 function ApplyLeaveModel({ open, onClose, onSuccess }) {
 
@@ -14,6 +16,17 @@ function ApplyLeaveModel({ open, onClose, onSuccess }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true)
+        const formData = new FormData(e.currentTarget)
+        const data = Object.fromEntries(formData.entries())
+
+        try {
+            await axiosInstance.post('/leave', data)
+            onSuccess();
+            onClose();
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to apply for leave")
+        }
     }
 
     if (!open) return null;
@@ -79,7 +92,7 @@ function ApplyLeaveModel({ open, onClose, onSuccess }) {
 
                     {/* --------- Button ---------- */}
                     <div className='flex justify-end gap-3 pt-2'>
-                        <button type='button' onClick={onClose} disabled={loading} className='btn-secondary'>Cancel</button>
+                        <button type='button' disabled={loading} className='btn-secondary'>Cancel</button>
                         <button type='submit' disabled={loading} className='btn-primary flex'>{loading ? <Loader2 className='w-4 h-4 animate-spin' /> : <Send className='w-4 h-4' />}{loading ? <span className='ml-2'>Submitting...</span> : <span className='ml-2'>Submit</span>}</button>
                     </div>
                 </form>

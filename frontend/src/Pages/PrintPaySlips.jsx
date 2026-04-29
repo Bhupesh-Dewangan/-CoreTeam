@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom'
-import { dummyPayslipData } from '../assets/dummydata';
 import Loading from '../Components/Loading';
 import { format } from 'date-fns'
+import axiosInstance from '../api/axios';
+import { toast } from 'react-toastify';
 
 function PrintPaySlips() {
   const { id } = useParams();
@@ -10,10 +11,7 @@ function PrintPaySlips() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setPayslip(dummyPayslipData.find((slip) => slip._id === id))
-    setTimeout(() => {
-      setLoading(false)
-    }, 1000)
+    axiosInstance.get(`/payslips/${id}`).then(res => setPayslip(res.data)).catch(err => toast.error(err?.response?.data?.error || err?.message)).finally(() => setLoading(false))
   }, [id])
 
   if (loading) return <Loading />

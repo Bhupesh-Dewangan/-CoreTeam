@@ -1,11 +1,22 @@
 import React, { useState } from 'react'
 import { format } from 'date-fns'
 import { Check, X, Loader2 } from 'lucide-react'
+import axiosInstance from '../../api/axios'
+import { toast } from 'react-toastify'
 
 function LeaveHistory({ leaves, isAdmin, onUpdate }) {
     const [processing, setProcessing] = useState(null)
     const handleStatusUpdate = async (id, status) => {
         setProcessing(id)
+        try {
+            await axiosInstance.patch(`/leave/${id}`, { status })
+            onUpdate()
+            toast.success("Leave status updated successfully")
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to update leave status")
+        } finally {
+            setProcessing(null)
+        }
     }
 
     return (

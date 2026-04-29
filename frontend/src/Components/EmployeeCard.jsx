@@ -1,10 +1,18 @@
-import React from 'react'
 import { PencilIcon, Trash2Icon } from 'lucide-react'
+import axiosInstance from '../api/axios';
+import { toast } from 'react-toastify';
 
 function EmployeeCard({ employee, onDelete, onEdit }) {
-    const handleDelete = () => {
+    const handleDelete = async () => {
         if (!confirm(`Are you sure you want to delete ${employee.firstName} ${employee.lastName}`)) {
             return;
+        }
+        try {
+            await axiosInstance.delete(`/employees/${employee.id}`);
+            onDelete();
+            toast.success('Employee deleted successfully');
+        } catch (error) {
+            toast.error('Failed to delete employee');
         }
     }
 

@@ -1,23 +1,37 @@
 import React, { useState, useEffect } from 'react'
-import { dummyLeaveData } from '../assets/dummyData';
 import Loading from '../Components/Loading';
 import { useCallback } from 'react';
 import { PlusIcon, ThermometerIcon, UmbrellaIcon, PalmtreeIcon } from 'lucide-react';
 import LeaveHistory from '../Components/Leave/LeaveHistory';
 import ApplyLeaveModel from '../Components/Leave/ApplyLeaveModel';
+import axiosInstance from '../api/axios';
+import { useAuth } from '../context/authContext';
+import { toast } from 'react-toastify';
 
 function Leave() {
+
+  const { user } = useAuth();
+
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
-  const isAdmin = false;
+  const isAdmin = user?.role === 'Admin';
 
   const fetchLeaves = useCallback(async () => {
-    setLeaves(dummyLeaveData);
-    setTimeout(() => {
+    try {
+      const res = await axiosInstance.get('/leaves');
+      const data = res.data;
+      setLeaves(data);
+      if (res.data.employee?.isDeleted) {
+        setIsDeleted(true);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.error || error.message || "Failed to load leave data");
+    }
+    finally {
       setLoading(false);
-    }, 1000);
+    }
   }, []);
 
   useEffect(() => {

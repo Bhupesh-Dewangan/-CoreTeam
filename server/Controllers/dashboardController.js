@@ -16,7 +16,7 @@ export const getDashboard = async (req, res) => {
                     Attendance.countDocuments({
                         date: {
                             $gte: new Date(new Date().setHours(0, 0, 0, 0)),
-                            $1t: new Date(new Date().setHours(24, 0, 0, 0)),
+                            $lt: new Date(new Date().setHours(24, 0, 0, 0)),
                         }
 
                     }),

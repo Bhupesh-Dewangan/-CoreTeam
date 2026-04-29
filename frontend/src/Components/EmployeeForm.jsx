@@ -1,8 +1,5 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { DEPARTMENTS } from '../assets/dummyData';
-import { Loader2Icon } from 'lucide-react';
 
 function EmployeeForm({ initialData, onSuccess, onCancel }) {
     const navigate = useNavigate();
@@ -11,6 +8,31 @@ function EmployeeForm({ initialData, onSuccess, onCancel }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+        const formData = new FormData(e.currentTarget);
+        if (isEditMode) {
+            const pwd = formData.get('password');
+            if (pwd) {
+                formData.delete('password');
+            }
+        }
+
+        try {
+            const url = isEditMode ? `/employees/${initialData.id}` : `/employees`;
+            const method = isEditMode ? 'put' : 'post';
+
+            const res = await axiosInstance[method](url, formData);
+
+            onSuccess ? onSuccess() : navigate('/dashboard/employees');
+            toast.success(res.data.message);
+
+        } catch (error) {
+            console.error(error);
+            toast.error(error.response?.data?.error || 'Failed to save employee');
+        } finally {
+            setLoading(false);
+        }
+
 
     };
 

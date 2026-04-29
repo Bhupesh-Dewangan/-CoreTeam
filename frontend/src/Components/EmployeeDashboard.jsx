@@ -1,4 +1,3 @@
-import React from "react";
 import {
   CalendarIcon,
   FileTextIcon,
@@ -6,6 +5,7 @@ import {
   ArrowRightIcon,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+
 
 
 function EmployeeDashboard({ data }) {
@@ -73,7 +73,7 @@ function EmployeeDashboard({ data }) {
           to="/leave"
           className="btn-secondary text-center inline-flex items-center gap-2 justify-center"
         >
-          Apply for Leave 
+          Apply for Leave
         </Link>
 
       </div>

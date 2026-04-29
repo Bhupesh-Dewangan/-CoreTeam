@@ -11,10 +11,13 @@ import PrintPaySlips from "./Pages/PrintPaySlips";
 import LoginForm from "./Components/LoginForm";
 import Employees from "./Pages/Employees";
 import LoginLoading from "./Pages/LoginLoading";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   return (
     <>
+      <ToastContainer />
       <Routes>
         <Route path="/login" element={<LoginLoading />} />
 

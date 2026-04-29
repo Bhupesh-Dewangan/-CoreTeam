@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect } from 'react'
 import { useState } from 'react'
-import { dummyAttendanceData } from '../assets/dummyData'
 import Loading from '../Components/Loading'
 import CheckinButton from '../Components/Attendance/CheckinButton'
 import AttendanceStats from '../Components/Attendance/AttendanceStats'
 import AttendanceHistory from '../Components/Attendance/AttendanceHistory'
+import axiosInstance from '../api/axios'
+import { toast } from 'react-toastify'
 
 
 function Attendance() {
@@ -13,10 +14,17 @@ function Attendance() {
   const [isDeleted, setIsDeleted] = useState(false)
 
   const fetchData = useCallback(async () => {
-    setHistory(dummyAttendanceData)
-    setTimeout(() => {
+    try {
+      const res = await axiosInstance.get('/attendance')
+      setHistory(res.data.data)
+      if (res.data.employee?.isDeleted) {
+        setIsDeleted(true)
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to fetch attendance data")
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }, [])
 
   useEffect(() => {

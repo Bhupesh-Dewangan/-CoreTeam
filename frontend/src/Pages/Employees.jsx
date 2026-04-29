@@ -1,9 +1,10 @@
 import { Plus, SearchIcon, X } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react'
-import { dummyEmployeeData, DEPARTMENTS } from '../assets/dummyData';
-import Loading from '../Components/Loading';
 import EmployeeCard from '../Components/EmployeeCard';
 import EmployeeForm from '../Components/EmployeeForm';
+import axiosInstance from '../api/axios';
+import { toast } from 'react-toastify';
+import Loading from '../Components/Loading'
 
 
 function Employees() {
@@ -16,11 +17,18 @@ function Employees() {
 
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
-    setEmployees(dummyEmployeeData.filter((employee) => (selectedDepartment ? employee.department === selectedDepartment : employee)));
-    setTimeout(() => {
+    try {
+      const url = selectedDepartment ? `/employees?department=${selectedDepartment}` : `/employees`;
+      setLoading(true);
+      const res = await axiosInstance.get(url);
+      setEmployees(res.data);
+    } catch (error) {
+      console.log(error);
+      toast.error("Error fetching data");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
+
   }, [selectedDepartment]);
 
   useEffect(() => {

@@ -1,21 +1,29 @@
-import React from 'react'
 import { useState, useEffect } from 'react'
-import { dummyProfileData } from '../assets/dummyData'
 import Loading from '../Components/Loading'
 import { Lock } from 'lucide-react';
 import ProfileForm from '../Components/ProfileForm'
 import ChangePasswordModal from '../Components/ChangePasswordModal';
+import { useAuth } from '../context/authContext';
+import axiosInstance from '../api/axios';
+import { toast } from 'react-toastify';
 
 function Settings() {
+  const { user } = useAuth()
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   const fetchProfile = async () => {
-    setProfile(dummyProfileData)
-    setTimeout(() => {
+    try {
+      const res = await axiosInstance.get("/profile")
+      const profile = res.data;
+      console.log("Profile Data: ", profile);
+      if (profile) setProfile(profile)
+    } catch (err) {
+      toast.error(err?.response?.data?.error || err?.message)
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   useEffect(() => {

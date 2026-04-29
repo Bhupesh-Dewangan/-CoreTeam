@@ -3,7 +3,7 @@ import connectDB from "./config/db.js";
 import User from "./Models/User.js";
 import bcrypt from "bcrypt";
 
-const TemporaryPassword = "admin123";
+const TemporaryPassword = "admin1234";
 
 async function registerAdmin() {
     try {
@@ -27,7 +27,8 @@ async function registerAdmin() {
         await User.create({
             email: process.env.ADMIN_EMAIL,
             password: hashedPassword,
-            role: "Admin"
+            role: "Admin",
+            name: "Admin"
         });
 
         console.log("Admin created successfully");

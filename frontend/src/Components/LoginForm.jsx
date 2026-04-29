@@ -1,9 +1,11 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeftIcon, EyeOffIcon } from "lucide-react";
 import LoginLeftSide from "./LoginLeftSide";
 import { useState } from "react";
 import { EyeIcon, Loader2Icon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/authContext.jsx";
+import { toast } from "react-toastify";
 
 
 function LoginForm({ role, title, subtitle }) {
@@ -13,10 +15,21 @@ function LoginForm({ role, title, subtitle }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
+    try {
+      await login(email, password, role);
+      navigate("/dashboard");
+    } catch (error) {
+      toast.error(error.response?.data.error || error.message || "Login Failed");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

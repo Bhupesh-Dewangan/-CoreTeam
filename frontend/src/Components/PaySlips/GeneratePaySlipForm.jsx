@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Plus, X, Loader2 } from 'lucide-react'
+import axiosInstance from '../../api/axios'
+import { toast } from 'react-toastify'
 
 function GeneratePaySlipForm({ employees, onSuccess }) {
     const [isOpen, setIsOpen] = useState(false)
@@ -13,8 +15,20 @@ function GeneratePaySlipForm({ employees, onSuccess }) {
         </button>
     )
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
+        setLoading(true)
+        const formData = new FormData(e.currentTarget);
+        const data = Object.fromEntries(formData.entries())
+        try {
+            await axiosInstance.post('/payslips', data)
+            setIsOpen(false)
+            onSuccess()
+        } catch (err) {
+            toast.error(err.response?.data?.error || err?.message);
+        }
+        setLoading(false)
+
     }
 
     return (
@@ -47,10 +61,10 @@ function GeneratePaySlipForm({ employees, onSuccess }) {
                             <label className="block text-sm font-medium text-slate-700 mb-2">Month</label>
                             <select name="month">
                                 {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                                        <option key={m} value={m}>
-                                            {m}
-                                        </option>
-                                    ))}
+                                    <option key={m} value={m}>
+                                        {m}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <div>
