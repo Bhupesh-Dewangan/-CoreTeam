@@ -13,11 +13,13 @@ import Employees from "./Pages/Employees";
 import LoginLoading from "./Pages/LoginLoading";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useTheme } from "./context/themeContext";
 
 function App() {
+  const { theme } = useTheme();
   return (
     <>
-      <ToastContainer />
+      <ToastContainer theme={theme === "dark" ? "dark" : "light"} />
       <Routes>
         <Route path="/login" element={<LoginLoading />} />
 

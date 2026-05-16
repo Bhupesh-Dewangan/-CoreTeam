@@ -4,69 +4,64 @@ import { format } from 'date-fns'
 
 function AttendanceHistory({ history }) {
     return (
-        <div className='card overflow-hidden'>
-            <div className='px-6 py-4 border-b bg-slate-100'>
-                <h3 className='font-semibold text-slate-900'>Recent Activity</h3>
-            </div>
+        <div className='overflow-x-auto'>
+            <table className='table-modern'>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Check In</th>
+                        <th>Check Out</th>
+                        <th>Working Hours</th>
+                        <th>Day Type</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
 
-            <div className='overflow-x-auto'>
-                <table className='table-modern'>
-                    <thead>
+                <tbody>
+                    {history.length === 0 ? (
                         <tr>
-                            <th className='px-6 py-4 '>Date</th>
-                            <th className='px-6 py-4 '>Check In</th>
-                            <th className='px-6 py-4 '>Check Out</th>
-                            <th className='px-6 py-4 '>Working Hours</th>
-                            <th className='px-6 py-4 '>Day Type</th>
-                            <th className='px-6 py-4 '>Status</th>
+                            <td colSpan="6" className='py-16 text-center text-slate-500 dark:text-slate-400'>
+                                No attendance records found
+                            </td>
                         </tr>
-                    </thead>
-
-                    <tbody>
-                        {history.length === 0 ? (
-                            <tr className='hover:bg-slate-50 transition-colors'>
-                                <td colSpan="6" className='py-12 text-center text-slate-500'>No attendance records found</td>
-                            </tr>
-                        ) : (
-                            history.map((record) => {
-                                const dayType = getDayTypeDisplay(record)
-                                return (
-                                    <tr key={record._id || record.id} >
-                                        <td className='px-6 py-4 font-medium text-slate-900'>{format(new Date(record.date), 'MMM dd, yyyy')}</td>
-                                        <td className='px-6 py-4 text-slate-600'>
-                                            {record.checkIn ?
-                                                format(new Date(record.checkIn), 'hh:mm a') : '-'
-                                            }
-                                        </td>
-                                        <td className='px-6 py-4 text-slate-600'>
-                                            {record.checkOut ?
-                                                format(new Date(record.checkOut), 'hh:mm a') : '-'
-                                            }
-                                        </td>
-                                        <td className='px-6 py-4 text-slate-600 font-medium'>
-                                            {getWorkingHoursDisplay(record)}
-                                        </td>
-                                        <td className='px-6 py-4'>
-                                            {dayType.label !== "-" ? <span className={`badge ${dayType.className}`}>
-                                                {dayType.label}
-                                            </span> : "-"}
-                                        </td>
-                                        <td className='px-6 py-4'>
-                                            <span className={`badge ${record.status === 'Present' ? 'badge-success' : record.status === 'Late' ? 'badge-warning' : 'badge-danger'}`}>
-                                                {record.status}
-                                            </span>
-                                        </td>
-
-                                    </tr>
-                                )
-                            })
-                        )}
-
-                    </tbody>
-
-                </table>
-            </div>
-        </div >
+                    ) : (
+                        history.map((record) => {
+                            const dayType = getDayTypeDisplay(record)
+                            return (
+                                <tr key={record._id || record.id}>
+                                    <td className='font-medium text-slate-900 dark:text-slate-100'>
+                                        {format(new Date(record.date), 'MMM dd, yyyy')}
+                                    </td>
+                                    <td>
+                                        {record.checkIn
+                                            ? format(new Date(record.checkIn), 'hh:mm a')
+                                            : '-'}
+                                    </td>
+                                    <td>
+                                        {record.checkOut
+                                            ? format(new Date(record.checkOut), 'hh:mm a')
+                                            : '-'}
+                                    </td>
+                                    <td className='font-medium'>
+                                        {getWorkingHoursDisplay(record)}
+                                    </td>
+                                    <td>
+                                        {dayType.label !== "-"
+                                            ? <span className={`badge ${dayType.className}`}>{dayType.label}</span>
+                                            : "-"}
+                                    </td>
+                                    <td>
+                                        <span className={`badge ${record.status === 'Present' ? 'badge-success' : record.status === 'Late' ? 'badge-warning' : 'badge-danger'}`}>
+                                            {record.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            )
+                        })
+                    )}
+                </tbody>
+            </table>
+        </div>
     )
 }
 

@@ -20,8 +20,6 @@ function LeaveHistory({ leaves, isAdmin, onUpdate }) {
     }
 
     return (
-        <div className='card overflow-hidden'>
-
             <div className='overflow-x-auto'>
                 <table className='table-modern'>
                     <thead>
@@ -95,7 +93,6 @@ function LeaveHistory({ leaves, isAdmin, onUpdate }) {
 
                 </table>
             </div>
-        </div >
     )
 }
 

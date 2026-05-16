@@ -323,7 +323,7 @@ export function getDayTypeDisplay(record) {
         };
     }
     if (record.checkIn && !record.checkOut) {
-        return { label: "In Progress", className: "bg-indigo-100 text-indigo-700" };
+        return { label: "In Progress", className: "bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400" };
     }
     return { label: "—", className: "" };
 }

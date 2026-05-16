@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import Loading from '../Components/Loading';
 import { useCallback } from 'react';
-import { PlusIcon, ThermometerIcon, UmbrellaIcon, PalmtreeIcon } from 'lucide-react';
+import { PlusIcon, ThermometerIcon, UmbrellaIcon, PalmtreeIcon, CalendarDays } from 'lucide-react';
 import LeaveHistory from '../Components/Leave/LeaveHistory';
 import ApplyLeaveModel from '../Components/Leave/ApplyLeaveModel';
+import PageHero from '../Components/layout/PageHero';
+import SectionCard from '../Components/layout/SectionCard';
 import axiosInstance from '../api/axios';
 import { useAuth } from '../context/authContext';
 import { toast } from 'react-toastify';
 
 function Leave() {
-
   const { user } = useAuth();
-
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -27,8 +27,7 @@ function Leave() {
       }
     } catch (error) {
       toast.error(error.response?.data?.error || error.message || "Failed to load leave data");
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
   }, []);
@@ -39,10 +38,10 @@ function Leave() {
 
   if (loading) return <Loading />
 
-  // The backend stores leave type in `type` (CASUAL/SICK/ANNUAL) and decision in `status` (Pending/Approved/Rejected)
   const sickCount = leaves.filter((l) => l.type === 'SICK').length;
   const casualCount = leaves.filter((l) => l.type === 'CASUAL').length;
   const annualCount = leaves.filter((l) => l.type === 'ANNUAL').length;
+  const pendingCount = leaves.filter((l) => l.status === 'Pending').length;
 
   const leaveStats = [
     { label: 'Sick Leave', value: sickCount, icon: ThermometerIcon },
@@ -52,35 +51,81 @@ function Leave() {
 
   return (
     <div className='animate-fade-in'>
-      <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8'>
-        <div>
-          <h1 className='page-title'>Leave Management</h1>
-          <p className='page-subtitle'>{isAdmin ? "Manage leave applications" : "Track your leave history and submit leave requests"}</p>
-        </div>
+      <PageHero
+        icon={CalendarDays}
+        title="Leave Management"
+        badge={isAdmin ? `${pendingCount} pending` : undefined}
+        subtitle={isAdmin ? "Review, approve, or reject team leave applications." : "Track your leave history and submit new requests."}
+      >
         {!isAdmin && !isDeleted && (
-          <button onClick={() => setShowModal(true)}
-            className='btn-primary flex items-center gap-2 w-full sm:w-auto justify-center'>
+          <button onClick={() => setShowModal(true)} className='btn-primary flex items-center gap-2 justify-center'>
             <PlusIcon className='w-4 h-4' /> Apply for Leave
           </button>
         )}
-      </div>
+      </PageHero>
+
       {!isAdmin && (
-        <div className='grid grid-cols-1 md:grid-cols-3 sm:gap-5 gap-4 mb-8'>
-          {leaveStats.map((stat) => (
-            <div key={stat.label} className='card card-hover p-5 sm:p-6 flex items-center gap-4 relative overflow-hidden group'>
-              <div className='absolute top-0 left-0 bottom-0 w-1 roundeed-r-full bg-slate-500/70 group-hover:bg-indigo-500/70' />
-              <div className='p-3 bg-slate-100 rounded-lg group-hover:bg-indigo-50 transition-colors duration-200'>
-                <stat.icon className='w-5 h-5 text-slate-500 group-hover:text-indigo-600 transition-colors duration-200' />
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 mb-8'>
+          {leaveStats.map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <div key={stat.label} className='card card-hover p-5 sm:p-6 flex items-center gap-4 relative overflow-hidden group'>
+                <div className="stat-accent" />
+                <div className="stat-icon-wrap">
+                  <Icon className="stat-icon" />
+                </div>
+                <div>
+                  <p className='text-sm text-slate-500 dark:text-slate-400'>{stat.label}</p>
+                  <p className='text-2xl font-bold text-slate-900 dark:text-slate-50 tracking-tight'>
+                    {stat.value} <span className='text-sm font-normal text-slate-400'>taken</span>
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className='text-sm text-slate-500'>{stat.label}</p>
-                <p className='text-2xl font-bold text-slate-900 tracking-tight'>{stat.value} <span className='text-sm font-normal text-slate-400'>taken</span></p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
-      <LeaveHistory leaves={leaves} isAdmin={isAdmin} onUpdate={fetchLeaves} />
+
+      {isAdmin && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          <div className="summary-pill">
+            <div>
+              <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">Total requests</p>
+              <p className="text-lg font-semibold text-slate-900 dark:text-slate-50 mt-0.5">{leaves.length}</p>
+            </div>
+          </div>
+          <div className="summary-pill">
+            <div>
+              <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">Pending</p>
+              <p className="text-lg font-semibold text-amber-600 dark:text-amber-400 mt-0.5">{pendingCount}</p>
+            </div>
+          </div>
+          <div className="summary-pill">
+            <div>
+              <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">Approved</p>
+              <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                {leaves.filter((l) => l.status === 'Approved').length}
+              </p>
+            </div>
+          </div>
+          <div className="summary-pill">
+            <div>
+              <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">Rejected</p>
+              <p className="text-lg font-semibold text-rose-600 dark:text-rose-400 mt-0.5">
+                {leaves.filter((l) => l.status === 'Rejected').length}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <SectionCard
+        title={isAdmin ? "All leave applications" : "Your leave history"}
+        description={`${leaves.length} record${leaves.length !== 1 ? "s" : ""} on file`}
+      >
+        <LeaveHistory leaves={leaves} isAdmin={isAdmin} onUpdate={fetchLeaves} />
+      </SectionCard>
+
       <ApplyLeaveModel open={showModal} onClose={() => setShowModal(false)} onSuccess={fetchLeaves} />
     </div>
   )

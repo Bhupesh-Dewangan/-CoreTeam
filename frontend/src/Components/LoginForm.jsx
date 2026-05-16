@@ -36,7 +36,7 @@ function LoginForm({ role, title, subtitle }) {
     <div className="min-h-screen flex flex-col md:flex-row">
       <LoginLeftSide />
 
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-12 bg-white">
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-12 bg-white dark:bg-slate-950">
         <div className="w-full max-w-md animate-fade-in">
           <Link
             to="/login"
@@ -46,7 +46,7 @@ function LoginForm({ role, title, subtitle }) {
           </Link>
 
           <div className="mb-8">
-            <h1 className="text-2xl sm:text-3xl font-medium text-zinc-800">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-slate-50">
               {title}
             </h1>
             <p className="text-slate-500 text-sm sm:text-base mt-2">
@@ -106,7 +106,7 @@ function LoginForm({ role, title, subtitle }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-linear-to-r from-indigo-600 to-indigo-500  text-white rounded-md text-sm forny-semibold hover:from-indigo-700 hover:to-indigo-600 disabled:opacity-50 transition-all duration-200 shadow-lg shadow-indigo-500/25 active:scale-[0.98] flex items-center justify-center"
+              className="w-full py-3 btn-primary flex items-center justify-center"
             >
               {loading && (
                 <Loader2Icon className="animate-spin mr-2 h-4 w-4" />
