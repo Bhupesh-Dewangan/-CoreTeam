@@ -9,8 +9,8 @@ import { toast } from "react-toastify";
 
 
 function LoginForm({ role, title, subtitle }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(role === "admin" ? "admin2@coreteam.com" : "demoemp@coreteam.com");
+  const [password, setPassword] = useState(role === "admin" ? "admin1234" : "demo1234");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
