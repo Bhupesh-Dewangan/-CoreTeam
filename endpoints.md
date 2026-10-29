@@ -120,3 +120,161 @@ Returns server status confirmation.
 ```text
 Server is running
 ```
+
+
+---
+
+## 🔑 Authentication Endpoints (`/api/auth`)
+
+### 1. User Login
+Authenticates an administrator or employee using their email and password, returning a JWT token valid for 24 hours.
+
+- **Method:** `POST`
+- **Path:** `/api/auth/login`
+- **Access:** Public
+- **Headers:** `Content-Type: application/json`
+
+#### Request Body
+| Field | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `email` | `string` | **Yes** | Registered email address of user |
+| `password` | `string` | **Yes** | Plaintext password |
+| `role_type` | `string` | No | Optional role validation (`"admin"` or `"employee"`). If specified, verifies the account matches the requested role |
+
+```json
+{
+  "email": "employee@example.com",
+  "password": "Password123!",
+  "role_type": "employee"
+}
+```
+
+#### Success Response
+- **Status:** `200 OK`
+```json
+{
+  "success": true,
+  "user": {
+    "userId": "664b38d92837f482a1b94091",
+    "role": "Employee",
+    "email": "employee@example.com"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+#### Error Responses
+- **Status:** `400 Bad Request` - Missing email or password
+```json
+{
+  "error": "Email and password are required"
+}
+```
+- **Status:** `401 Unauthorized` - Invalid email, password, or mismatched role
+```json
+{
+  "error": "Invalid credentials"
+}
+```
+- **Status:** `500 Internal Server Error` - Database or execution failure
+```json
+{
+  "success": false,
+  "message": "Failed to login"
+}
+```
+
+---
+
+### 2. Verify Session
+Validates the caller's JWT token and returns their decoded session data.
+
+- **Method:** `GET`
+- **Path:** `/api/auth/session`
+- **Access:** Protected (`Admin`, `Employee`)
+- **Headers:** `Authorization: Bearer <token>`
+
+#### Success Response
+- **Status:** `200 OK`
+```json
+{
+  "success": true,
+  "session": {
+    "userId": "664b38d92837f482a1b94091",
+    "role": "Employee",
+    "email": "employee@example.com",
+    "iat": 1729000000,
+    "exp": 1729086400
+  }
+}
+```
+
+#### Error Response
+- **Status:** `401 Unauthorized` - Token missing, malformed, or expired
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+---
+
+### 3. Change Password
+Changes the password of the currently authenticated user.
+
+- **Method:** `POST`
+- **Path:** `/api/auth/change-password`
+- **Access:** Protected (`Admin`, `Employee`)
+- **Headers:** 
+  - `Authorization: Bearer <token>`
+  - `Content-Type: application/json`
+
+#### Request Body
+| Field | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `oldPassword` | `string` | **Yes** | Existing plaintext password |
+| `newPassword` | `string` | **Yes** | New plaintext password to be hashed with bcrypt (10 salt rounds) |
+
+```json
+{
+  "oldPassword": "CurrentPassword123!",
+  "newPassword": "NewSecurePassword456@"
+}
+```
+
+#### Success Response
+- **Status:** `200 OK`
+```json
+{
+  "success": true,
+  "message": "Password changed successfully"
+}
+```
+
+#### Error Responses
+- **Status:** `400 Bad Request` - Missing passwords or incorrect old password
+```json
+{
+  "error": "Old password and new password are required"
+}
+```
+```json
+{
+  "success": false,
+  "message": "Invalid credentials"
+}
+```
+- **Status:** `404 Not Found` - User account does not exist
+```json
+{
+  "success": false,
+  "message": "User not found"
+}
+```
+- **Status:** `500 Internal Server Error`
+```json
+{
+  "success": false,
+  "message": "Failed to change password"
+}
+```
