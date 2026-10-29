@@ -877,3 +877,161 @@ Approves, rejects, or resets a leave application.
   "error": "Invalid status"
 }
 ```
+
+
+---
+
+## 💵 Payslip Endpoints (`/api/payslips`)
+
+---
+
+### 1. Create Payslip
+Generates a monthly payroll record for an employee. Computes net salary as `basicSalary + allowances - deductions`.
+
+- **Method:** `POST`
+- **Path:** `/api/payslips`
+- **Access:** Protected (`Admin` only)
+- **Headers:** 
+  - `Authorization: Bearer <token>`
+  - `Content-Type: application/json`
+
+#### Request Body
+| Field | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `employeeId` | `string` | **Yes** | MongoDB ObjectId of Employee |
+| `month` | `number` | **Yes** | Payroll month (`1` to `12`) |
+| `year` | `number` | **Yes** | Payroll year (e.g. `2026`) |
+| `basicSalary` | `number` | **Yes** | Base monthly salary |
+| `allowances` | `number` | No | Additional allowances (default: `0`) |
+| `deductions` | `number` | No | Deductions such as tax and provident fund (default: `0`) |
+
+```json
+{
+  "employeeId": "664c39b1a29381001a4092b1",
+  "month": 10,
+  "year": 2026,
+  "basicSalary": 85000,
+  "allowances": 12000,
+  "deductions": 5000
+}
+```
+
+#### Success Response
+- **Status:** `201 Created`
+```json
+{
+  "message": "Payslip created successfully",
+  "success": true,
+  "data": {
+    "_id": "664c3f50a29381001a409301",
+    "employeeId": "664c39b1a29381001a4092b1",
+    "month": 10,
+    "year": 2026,
+    "basicSalary": 85000,
+    "allowances": 12000,
+    "deductions": 5000,
+    "netSalary": 92000,
+    "createdAt": "2026-10-29T20:00:00.000Z",
+    "updatedAt": "2026-10-29T20:00:00.000Z"
+  }
+}
+```
+
+#### Error Responses
+- **Status:** `400 Bad Request`
+```json
+{
+  "message": "Missing fields are required"
+}
+```
+
+---
+
+### 2. List Payslips
+Retrieves payroll history based on role permissions.
+
+- **Method:** `GET`
+- **Path:** `/api/payslips`
+- **Access:** Protected (`Admin`, `Employee`)
+- **Headers:** `Authorization: Bearer <token>`
+
+#### Role-Based Behavior:
+- **Admin:** Returns all payslips sorted by `createdAt: -1` with populated `employeeId`.
+- **Employee:** Returns only payslips issued to the logged-in employee.
+
+#### Success Response
+- **Status:** `200 OK`
+```json
+{
+  "message": "Payslips fetched successfully",
+  "success": true,
+  "data": [
+    {
+      "id": "664c3f50a29381001a409301",
+      "_id": "664c3f50a29381001a409301",
+      "employeeId": "664c39b1a29381001a4092b1",
+      "month": 10,
+      "year": 2026,
+      "basicSalary": 85000,
+      "allowances": 12000,
+      "deductions": 5000,
+      "netSalary": 92000,
+      "createdAt": "2026-10-29T20:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+### 3. Get Payslip by ID
+Retrieves details for an individual payslip.
+
+- **Method:** `GET`
+- **Path:** `/api/payslips/:id`
+- **Access:** Protected (`Admin`, `Employee`)
+- **Headers:** `Authorization: Bearer <token>`
+- **Path Parameters:**
+  | Parameter | Type | Description |
+  | :--- | :--- | :--- |
+  | `id` | `string` | MongoDB ObjectId of Payslip |
+
+#### Access Restrictions:
+- Admins can query any payslip in the database.
+- Employees can only query payslips where `employeeId` matches their own identity (returns 404 otherwise).
+
+#### Success Response
+- **Status:** `200 OK`
+```json
+{
+  "message": "Payslip fetched successfully",
+  "success": true,
+  "data": {
+    "id": "664c3f50a29381001a409301",
+    "_id": "664c3f50a29381001a409301",
+    "employeeId": "664c39b1a29381001a4092b1",
+    "month": 10,
+    "year": 2026,
+    "basicSalary": 85000,
+    "allowances": 12000,
+    "deductions": 5000,
+    "netSalary": 92000,
+    "employee": {
+      "_id": "664c39b1a29381001a4092b1",
+      "firstName": "Sarah",
+      "lastName": "Connor",
+      "email": "sarah.connor@coreteam.com",
+      "position": "Senior Software Engineer",
+      "department": "Engineering"
+    }
+  }
+}
+```
+
+#### Error Responses
+- **Status:** `404 Not Found`
+```json
+{
+  "error": "Not found"
+}
+```
