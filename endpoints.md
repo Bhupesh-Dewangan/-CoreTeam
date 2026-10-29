@@ -1186,3 +1186,88 @@ Allows an employee to edit their personal bio description.
   "error": "Employee not found"
 }
 ```
+
+
+---
+
+## ⚡ Inngest Background Workflows & Cron (`/api/inngest`)
+
+CoreTeam integrates with **Inngest** to execute resilient, distributed serverless background workflows, automated reminders, and scheduled cron jobs without blocking HTTP request cycles.
+
+- **Webhook Path:** `/api/inngest`
+- **Method:** `GET`, `POST`, `PUT` (handled automatically by `serve({ client, functions })`)
+- **Client ID:** `Core-Team`
+
+---
+
+### 1. Auto Check-Out Workflow (`autoCheckOut`)
+Handles automatic checkout safety and reminder notifications when an employee clocks in.
+
+- **Event Trigger:** `employee/check-out`
+- **Payload:**
+  ```json
+  {
+    "name": "employee/check-out",
+    "data": {
+      "employeeId": "664c39b1a29381001a4092b1",
+      "attendanceId": "664c3c10a29381001a4092d5"
+    }
+  }
+  ```
+
+#### Execution Lifecycle:
+```mermaid
+sequenceDiagram
+    autonumber
+    participant App as Express API
+    participant Engine as Inngest Engine
+    participant DB as MongoDB
+    participant Mail as SMTP Mailer
+
+    App->>Engine: Send employee/check-out event
+    Engine-->>Engine: Sleep until 9 hours elapsed
+    Engine->>DB: Query attendance record
+    opt Attendance checkOut is null
+        Engine->>Mail: Send check-out reminder email to employee
+        Engine-->>Engine: Sleep until +1 hour elapsed (10h total)
+        Engine->>DB: Query attendance record again
+        opt Still no checkOut
+            Engine->>DB: Set checkOut = checkIn + 4h, workingHours = 4, status = "LATE", dayType = "Half Day"
+        end
+    end
+```
+
+---
+
+### 2. Leave Application Admin Reminder (`leaveApplicationReminder`)
+Ensures leave requests are not forgotten by notifying the administrator if an application stays unattended for 24 hours.
+
+- **Event Trigger:** `leave/pending`
+- **Payload:**
+  ```json
+  {
+    "name": "leave/pending",
+    "data": {
+      "leaveApplicationId": "664c3d82a29381001a4092ee"
+    }
+  }
+  ```
+
+#### Execution Steps:
+1. `wait-for-the-24-hours`: Waits for 24 hours from submission time.
+2. `send-leave-reminder-email`: Checks MongoDB if status is still `"Pending"`. If pending, sends HTML alert email to `ADMIN_EMAIL`.
+
+---
+
+### 3. Daily Attendance Audit Cron (`attendanceReminderCron`)
+Daily automated audit scheduled for **11:30 AM IST** (`06:00 UTC`). Identifies employees who have neither checked in nor submitted approved leave for the current day.
+
+- **Trigger Schedule:** `cron: "0 6 * * *"`
+
+#### Execution Steps:
+1. `get-today-date`: Computes start and end timestamps in `Asia/Kolkata` timezone.
+2. `get-active-employees`: Fetches all non-deleted employees with status `ACTIVE`.
+3. `get-on-leave-ids`: Identifies employees with `status: "APPROVED"` covering today.
+4. `get-checked-in-ids`: Identifies employees who already created an attendance record today.
+5. `filter-absent`: Isolates employees not in on-leave or checked-in sets.
+6. `send-reminder-emails`: Dispatches warning emails via Nodemailer to all absent employees.
