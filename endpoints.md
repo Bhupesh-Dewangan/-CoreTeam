@@ -278,3 +278,251 @@ Changes the password of the currently authenticated user.
   "message": "Failed to change password"
 }
 ```
+
+
+---
+
+## 👥 Employee Management Endpoints (`/api/employees`)
+
+All endpoints in this section require `Admin` role privileges (`protect`, `protectAdmin`).
+
+---
+
+### 1. List All Employees
+Fetches all employees sorted by creation date descending (`createdAt: -1`). Supports department filtering and populates user credentials.
+
+- **Method:** `GET`
+- **Path:** `/api/employees`
+- **Access:** Protected (`Admin` only)
+- **Headers:** `Authorization: Bearer <token>`
+- **Query Parameters:**
+  | Parameter | Type | Required | Description |
+  | :--- | :--- | :---: | :--- |
+  | `department` | `string` | No | Filter by department name (e.g. `Engineering`, `Sales`) |
+
+#### Success Response
+- **Status:** `200 OK`
+```json
+[
+  {
+    "id": "664c39b1a29381001a4092b1",
+    "_id": "664c39b1a29381001a4092b1",
+    "userId": {
+      "_id": "664c39b1a29381001a4092b0",
+      "email": "sarah.connor@coreteam.com",
+      "role": "Employee"
+    },
+    "firstName": "Sarah",
+    "lastName": "Connor",
+    "email": "sarah.connor@coreteam.com",
+    "phone": "+1-555-0199",
+    "position": "Senior Software Engineer",
+    "department": "Engineering",
+    "basicSalary": 85000,
+    "allowances": 12000,
+    "deductions": 5000,
+    "employmentStatus": "Active",
+    "joinDate": "2024-01-15T00:00:00.000Z",
+    "isDeleted": false,
+    "bio": "Full-stack developer specializing in React and Node.js.",
+    "createdAt": "2024-05-21T06:15:45.120Z",
+    "updatedAt": "2024-05-21T06:15:45.120Z",
+    "user": {
+      "email": "sarah.connor@coreteam.com",
+      "role": "Employee"
+    }
+  }
+]
+```
+
+#### Error Responses
+- **Status:** `401 Unauthorized` - Token missing or caller role is not `Admin`
+```json
+{
+  "error": "Unauthorized"
+}
+```
+- **Status:** `500 Internal Server Error`
+```json
+{
+  "success": false,
+  "message": "Failed to get employees"
+}
+```
+
+---
+
+### 2. Create Employee
+Registers a new system user login and simultaneously generates their complete employee profile.
+
+- **Method:** `POST`
+- **Path:** `/api/employees`
+- **Access:** Protected (`Admin` only)
+- **Headers:** 
+  - `Authorization: Bearer <token>`
+  - `Content-Type: application/json`
+
+#### Request Body
+| Field | Type | Required | Default | Description |
+| :--- | :--- | :---: | :--- | :--- |
+| `firstName` | `string` | **Yes** | — | Employee first name |
+| `lastName` | `string` | **Yes** | — | Employee last name |
+| `email` | `string` | **Yes** | — | Unique login email address |
+| `password` | `string` | **Yes** | — | Initial plaintext password |
+| `phone` | `string` | No | `""` | Contact phone number |
+| `position` | `string` | No | `""` | Job title |
+| `department` | `string` | No | `"Engineering"` | Department enum value |
+| `basicSalary` | `number` | No | `0` | Base monthly salary |
+| `allowances` | `number` | No | `0` | Monthly allowances |
+| `deductions` | `number` | No | `0` | Deductions (taxes, insurance) |
+| `joinDate` | `string (ISO)` | No | Current Date | Date joined |
+| `role` | `string` | No | `"Employee"` | `"Admin"` or `"Employee"` |
+| `bio` | `string` | No | `""` | Short biography/notes |
+
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@coreteam.com",
+  "password": "TemporaryPassword123!",
+  "phone": "+1-555-0144",
+  "position": "Frontend Developer",
+  "department": "Engineering",
+  "basicSalary": 75000,
+  "allowances": 8000,
+  "deductions": 3500,
+  "joinDate": "2024-06-01",
+  "role": "Employee",
+  "bio": "Passionate UI engineer."
+}
+```
+
+#### Success Response
+- **Status:** `201 Created`
+```json
+{
+  "success": true,
+  "employee": {
+    "_id": "664c3aa0a29381001a4092c2",
+    "userId": "664c3aa0a29381001a4092c1",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@coreteam.com",
+    "phone": "+1-555-0144",
+    "position": "Frontend Developer",
+    "department": "Engineering",
+    "basicSalary": 75000,
+    "allowances": 8000,
+    "deductions": 3500,
+    "joinDate": "2024-06-01T00:00:00.000Z",
+    "employmentStatus": "Active",
+    "isDeleted": false,
+    "bio": "Passionate UI engineer.",
+    "createdAt": "2024-05-21T06:20:00.000Z",
+    "updatedAt": "2024-05-21T06:20:00.000Z"
+  }
+}
+```
+
+#### Error Responses
+- **Status:** `400 Bad Request` - Missing mandatory fields or email already exists
+```json
+{
+  "error": "Missing required fields"
+}
+```
+```json
+{
+  "success": false,
+  "message": "Email already exists"
+}
+```
+
+---
+
+### 3. Update Employee
+Modifies an existing employee profile and synchronizes updates with their User credentials (such as email, password, and role).
+
+- **Method:** `PUT`
+- **Path:** `/api/employees/:id`
+- **Access:** Protected (`Admin` only)
+- **Headers:** 
+  - `Authorization: Bearer <token>`
+  - `Content-Type: application/json`
+- **Path Parameters:**
+  | Parameter | Type | Description |
+  | :--- | :--- | :--- |
+  | `id` | `string` | MongoDB ObjectId of Employee document |
+
+#### Request Body
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe.updated@coreteam.com",
+  "phone": "+1-555-9988",
+  "position": "Lead Frontend Architect",
+  "department": "Engineering",
+  "basicSalary": 92000,
+  "allowances": 10000,
+  "deductions": 4000,
+  "employmentStatus": "Active",
+  "bio": "Promoted to tech lead.",
+  "role": "Employee"
+}
+```
+
+#### Success Response
+- **Status:** `201 Created`
+```json
+{
+  "success": true
+}
+```
+
+#### Error Responses
+- **Status:** `400 Bad Request` - Email already taken by another account
+```json
+{
+  "success": false,
+  "message": "Email already exists"
+}
+```
+- **Status:** `404 Not Found` - Employee not found
+```json
+{
+  "success": false,
+  "message": "Employee not found"
+}
+```
+
+---
+
+### 4. Delete Employee (Soft Delete)
+Soft-deletes an employee record. Sets `isDeleted: true` and switches `employmentStatus: "Inactive"`. Prevents attendance clocking and leave submissions.
+
+- **Method:** `DELETE`
+- **Path:** `/api/employees/:id`
+- **Access:** Protected (`Admin` only)
+- **Headers:** `Authorization: Bearer <token>`
+- **Path Parameters:**
+  | Parameter | Type | Description |
+  | :--- | :--- | :--- |
+  | `id` | `string` | MongoDB ObjectId of Employee document |
+
+#### Success Response
+- **Status:** `201 Created`
+```json
+{
+  "success": true
+}
+```
+
+#### Error Responses
+- **Status:** `404 Not Found`
+```json
+{
+  "success": false,
+  "message": "Employee not found"
+}
+```
