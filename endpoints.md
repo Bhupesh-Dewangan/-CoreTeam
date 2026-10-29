@@ -526,3 +526,144 @@ Soft-deletes an employee record. Sets `isDeleted: true` and switches `employment
   "message": "Employee not found"
 }
 ```
+
+
+---
+
+## ⏱ Attendance Endpoints (`/api/attendance`)
+
+All attendance endpoints require an authenticated user with an associated Employee record (`protect`).
+
+---
+
+### 1. Clock In / Clock Out Toggle
+Toggles the attendance state for the current day. Automatically detects whether to initiate clock-in, complete clock-out, or indicate already completed attendance for today.
+
+- **Method:** `POST`
+- **Path:** `/api/attendance`
+- **Access:** Protected (`Employee`)
+- **Headers:** `Authorization: Bearer <token>`
+- **Request Body:** None required
+
+#### Workflow Logic:
+1. **Clock In (`type: "checkIn"`):**
+   - If no attendance document exists for today (`00:00:00` UTC/Local), creates a new attendance log.
+   - Status is marked `"Late"` if current time is past 09:00 AM (`hour > 9` or `hour == 9 && minutes > 0`), otherwise `"Present"`.
+   - Asynchronously triggers Inngest background event `employee/check-out`.
+2. **Clock Out (`type: "checkOut"`):**
+   - If checked in today but `checkOut` is null, records current time as `checkOut`.
+   - Computes `workingHours = (checkOut - checkIn) / 3600000` (rounded to 2 decimal places).
+   - Classifies `dayType`:
+     - $\ge 8.0\text{ hours}$ $\rightarrow$ `"Full Day"`
+     - $\ge 6.0\text{ hours}$ $\rightarrow$ `"Three Quarter Day"`
+     - $\ge 4.0\text{ hours}$ $\rightarrow$ `"Half Day"`
+     - $< 4.0\text{ hours}$ $\rightarrow$ `"Short Day"`
+3. **Already Completed (`type: "clockedOut"`):**
+   - If both `checkIn` and `checkOut` are already recorded for today.
+
+#### Responses
+
+##### A. Clock-In Response
+- **Status:** `200 OK`
+```json
+{
+  "message": "Clocked in successfully",
+  "success": true,
+  "type": "checkIn",
+  "data": {
+    "_id": "664c3c10a29381001a4092d5",
+    "employeeId": "664c39b1a29381001a4092b1",
+    "date": "2024-05-21T00:00:00.000Z",
+    "checkIn": "2024-05-21T08:55:12.345Z",
+    "status": "Present",
+    "checkOut": null,
+    "workingHours": null,
+    "dayType": null,
+    "createdAt": "2024-05-21T08:55:12.345Z",
+    "updatedAt": "2024-05-21T08:55:12.345Z"
+  }
+}
+```
+
+##### B. Clock-Out Response
+- **Status:** `200 OK`
+```json
+{
+  "message": "Clocked out successfully",
+  "success": true,
+  "type": "checkOut",
+  "data": {
+    "_id": "664c3c10a29381001a4092d5",
+    "employeeId": "664c39b1a29381001a4092b1",
+    "date": "2024-05-21T00:00:00.000Z",
+    "checkIn": "2024-05-21T08:55:12.345Z",
+    "checkOut": "2024-05-21T17:15:22.100Z",
+    "status": "Present",
+    "workingHours": 8.34,
+    "dayType": "Full Day",
+    "createdAt": "2024-05-21T08:55:12.345Z",
+    "updatedAt": "2024-05-21T17:15:22.100Z"
+  }
+}
+```
+
+##### C. Already Clocked Out
+- **Status:** `200 OK`
+```json
+{
+  "success": true,
+  "type": "clockedOut"
+}
+```
+
+#### Error Responses
+- **Status:** `403 Forbidden` - Deactivated employee account
+```json
+{
+  "error": "Your account is deactivated. You cannot clock in/out."
+}
+```
+- **Status:** `404 Not Found` - Employee profile not located
+```json
+{
+  "error": "Employee not found"
+}
+```
+
+---
+
+### 2. Get Attendance History
+Retrieves historical attendance records for the calling employee, sorted by date descending.
+
+- **Method:** `GET`
+- **Path:** `/api/attendance`
+- **Access:** Protected (`Employee`)
+- **Headers:** `Authorization: Bearer <token>`
+- **Query Parameters:**
+  | Parameter | Type | Required | Default | Description |
+  | :--- | :--- | :---: | :--- | :--- |
+  | `limit` | `number` | No | `30` | Maximum number of log records to return |
+
+#### Success Response
+- **Status:** `200 OK`
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "664c3c10a29381001a4092d5",
+      "employeeId": "664c39b1a29381001a4092b1",
+      "date": "2024-05-21T00:00:00.000Z",
+      "checkIn": "2024-05-21T08:55:12.345Z",
+      "checkOut": "2024-05-21T17:15:22.100Z",
+      "status": "Present",
+      "workingHours": 8.34,
+      "dayType": "Full Day",
+      "createdAt": "2024-05-21T08:55:12.345Z"
+    }
+  ],
+  "employee": {
+    "isDeleted": false
+  }
+}
+```
