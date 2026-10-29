@@ -667,3 +667,213 @@ Retrieves historical attendance records for the calling employee, sorted by date
   }
 }
 ```
+
+
+---
+
+## 🏖 Leave Management Endpoints (`/api/leave`)
+
+---
+
+### 1. Apply for Leave
+Submits a new time-off application for the authenticated employee. Triggers an Inngest background event (`leave/pending`) to send reminders to the administrator.
+
+- **Method:** `POST`
+- **Path:** `/api/leave/apply`
+- **Access:** Protected (`Employee`)
+- **Headers:** 
+  - `Authorization: Bearer <token>`
+  - `Content-Type: application/json`
+
+#### Request Body
+| Field | Type | Required | Allowed Values / Format | Description |
+| :--- | :--- | :---: | :--- | :--- |
+| `type` | `string` | **Yes** | `"Sick"`, `"Casual"`, `"Annual"`, `"SICK"`, `"CASUAL"`, `"ANNUAL"` | Category of leave |
+| `startDate` | `string (ISO)` | **Yes** | Future date | First day of requested leave |
+| `endDate` | `string (ISO)` | **Yes** | $\ge \text{startDate}$ | Final day of requested leave |
+| `reason` | `string` | **Yes** | Text string | Justification for time off |
+
+```json
+{
+  "type": "Casual",
+  "startDate": "2026-11-05",
+  "endDate": "2026-11-08",
+  "reason": "Family vacation and travel."
+}
+```
+
+#### Validation Rules:
+- `startDate` and `endDate` must both be strictly after today's date (`> today 00:00:00`).
+- `endDate` must be greater than or equal to `startDate`.
+
+#### Success Response
+- **Status:** `200 OK`
+```json
+{
+  "message": "Leave applied successfully",
+  "success": true,
+  "data": {
+    "_id": "664c3d82a29381001a4092ee",
+    "employeeId": "664c39b1a29381001a4092b1",
+    "type": "Casual",
+    "startDate": "2026-11-05T00:00:00.000Z",
+    "endDate": "2026-11-08T00:00:00.000Z",
+    "reason": "Family vacation and travel.",
+    "status": "Pending",
+    "createdAt": "2026-10-29T19:30:00.000Z",
+    "updatedAt": "2026-10-29T19:30:00.000Z"
+  }
+}
+```
+
+#### Error Responses
+- **Status:** `400 Bad Request` - Missing fields or invalid date logic
+```json
+{
+  "error": "All fields are required, Some fields are missing."
+}
+```
+```json
+{
+  "error": "Start date and end date must be greater than today"
+}
+```
+```json
+{
+  "error": "End date must be greater than start date"
+}
+```
+- **Status:** `403 Forbidden` - Account deactivated
+```json
+{
+  "error": "Your account is deactivated. You cannot apply for leave."
+}
+```
+
+---
+
+### 2. List Leave Applications
+Retrieves leave applications based on the caller's role.
+
+- **Method:** `GET`
+- **Path:** `/api/leave`
+- **Access:** Protected (`Admin`, `Employee`)
+- **Headers:** `Authorization: Bearer <token>`
+- **Query Parameters (Admin only):**
+  | Parameter | Type | Required | Description |
+  | :--- | :--- | :---: | :--- |
+  | `status` | `string` | No | Filter by `"Pending"`, `"Approved"`, or `"Rejected"` |
+
+#### Role-Based Behavior:
+- **Admin:** Returns all applications across the organization with populated employee details (`firstName`, `lastName`, `department`, `position`).
+- **Employee:** Returns only applications submitted by the caller.
+
+#### Admin Success Response
+- **Status:** `200 OK`
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "664c3d82a29381001a4092ee",
+      "_id": "664c3d82a29381001a4092ee",
+      "type": "Casual",
+      "startDate": "2026-11-05T00:00:00.000Z",
+      "endDate": "2026-11-08T00:00:00.000Z",
+      "reason": "Family vacation and travel.",
+      "status": "Pending",
+      "employeeId": "664c39b1a29381001a4092b1",
+      "employee": {
+        "_id": "664c39b1a29381001a4092b1",
+        "firstName": "Sarah",
+        "lastName": "Connor",
+        "email": "sarah.connor@coreteam.com",
+        "department": "Engineering",
+        "position": "Senior Software Engineer"
+      }
+    }
+  ]
+}
+```
+
+#### Employee Success Response
+- **Status:** `200 OK`
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "664c3d82a29381001a4092ee",
+      "employeeId": "664c39b1a29381001a4092b1",
+      "type": "Casual",
+      "startDate": "2026-11-05T00:00:00.000Z",
+      "endDate": "2026-11-08T00:00:00.000Z",
+      "reason": "Family vacation and travel.",
+      "status": "Pending",
+      "createdAt": "2026-10-29T19:30:00.000Z"
+    }
+  ],
+  "employee": {
+    "id": "664c39b1a29381001a4092b1",
+    "firstName": "Sarah",
+    "lastName": "Connor",
+    "department": "Engineering"
+  }
+}
+```
+
+---
+
+### 3. Update Leave Status
+Approves, rejects, or resets a leave application.
+
+- **Method:** `PATCH`
+- **Path:** `/api/leave/:id`
+- **Access:** Protected (`Admin` only)
+- **Headers:** 
+  - `Authorization: Bearer <token>`
+  - `Content-Type: application/json`
+- **Path Parameters:**
+  | Parameter | Type | Description |
+  | :--- | :--- | :--- |
+  | `id` | `string` | MongoDB ObjectId of LeaveApplication |
+
+#### Request Body
+```json
+{
+  "status": "Approved"
+}
+```
+*Allowed values:* `"Approved"`, `"Rejected"`, `"Pending"`
+
+#### Success Response
+- **Status:** `200 OK`
+```json
+{
+  "message": "Leave status updated successfully",
+  "success": true,
+  "data": {
+    "_id": "664c3d82a29381001a4092ee",
+    "employeeId": "664c39b1a29381001a4092b1",
+    "type": "Casual",
+    "startDate": "2026-11-05T00:00:00.000Z",
+    "endDate": "2026-11-08T00:00:00.000Z",
+    "reason": "Family vacation and travel.",
+    "status": "Approved",
+    "updatedAt": "2026-10-29T19:35:00.000Z"
+  }
+}
+```
+
+#### Error Responses
+- **Status:** `400 Bad Request`
+```json
+{
+  "error": "Status is required"
+}
+```
+```json
+{
+  "error": "Invalid status"
+}
+```
