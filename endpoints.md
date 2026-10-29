@@ -1035,3 +1035,154 @@ Retrieves details for an individual payslip.
   "error": "Not found"
 }
 ```
+
+
+---
+
+## 📊 Dashboard Endpoints (`/api/dashboard`)
+
+---
+
+### 1. Get Dashboard Analytics
+Provides role-specific statistical summaries for the admin control room or employee personal hub.
+
+- **Method:** `GET`
+- **Path:** `/api/dashboard`
+- **Access:** Protected (`Admin`, `Employee`)
+- **Headers:** `Authorization: Bearer <token>`
+
+#### A. Administrator Dashboard Metrics
+Aggregates enterprise-wide figures across active employees, departments, daily attendance, and outstanding leave requests.
+
+- **Status:** `200 OK`
+```json
+{
+  "message": "Dashboard data fetched successfully",
+  "success": true,
+  "data": {
+    "role": "Admin",
+    "totalEmployees": 42,
+    "totalDepartments": 10,
+    "todayAttendance": 38,
+    "pendingLeaves": 3
+  }
+}
+```
+
+#### B. Employee Dashboard Metrics
+Gathers metrics personalized to the logged-in employee: monthly attendance count, pending personal leaves, and the latest monthly payslip record.
+
+- **Status:** `200 OK`
+```json
+{
+  "message": "Dashboard data fetched successfully",
+  "success": true,
+  "data": {
+    "role": "Employee",
+    "employee": {
+      "id": "664c39b1a29381001a4092b1",
+      "firstName": "Sarah",
+      "lastName": "Connor",
+      "email": "sarah.connor@coreteam.com",
+      "department": "Engineering",
+      "position": "Senior Software Engineer"
+    },
+    "currentMonthAttendance": 19,
+    "pendingLeaves": 1,
+    "latestPayslip": {
+      "id": "664c3f50a29381001a409301",
+      "month": 10,
+      "year": 2026,
+      "basicSalary": 85000,
+      "netSalary": 92000
+    }
+  }
+}
+```
+
+---
+
+## 👤 User Profile Endpoints (`/api/profile`)
+
+---
+
+### 1. Get Current Profile
+Fetches the profile representation of the authenticated user.
+
+- **Method:** `GET`
+- **Path:** `/api/profile`
+- **Access:** Protected (`Admin`, `Employee`)
+- **Headers:** `Authorization: Bearer <token>`
+
+#### Response For Employee
+- **Status:** `200 OK`
+```json
+{
+  "_id": "664c39b1a29381001a4092b1",
+  "userId": "664c39b1a29381001a4092b0",
+  "firstName": "Sarah",
+  "lastName": "Connor",
+  "email": "sarah.connor@coreteam.com",
+  "phone": "+1-555-0199",
+  "position": "Senior Software Engineer",
+  "department": "Engineering",
+  "basicSalary": 85000,
+  "allowances": 12000,
+  "deductions": 5000,
+  "employmentStatus": "Active",
+  "joinDate": "2024-01-15T00:00:00.000Z",
+  "bio": "Full-stack developer specializing in React and Node.js."
+}
+```
+
+#### Response For Admin User
+- **Status:** `200 OK`
+```json
+{
+  "firstName": "Admin",
+  "lastName": "",
+  "email": "admin@coreteam.com"
+}
+```
+
+---
+
+### 2. Update Profile Bio
+Allows an employee to edit their personal bio description.
+
+- **Method:** `POST`
+- **Path:** `/api/profile`
+- **Access:** Protected (`Employee`)
+- **Headers:** 
+  - `Authorization: Bearer <token>`
+  - `Content-Type: application/json`
+
+#### Request Body
+```json
+{
+  "bio": "Senior developer focusing on cloud microservices and distributed systems."
+}
+```
+
+#### Success Response
+- **Status:** `200 OK`
+```json
+{
+  "success": true,
+  "message": "Profile updated successfully"
+}
+```
+
+#### Error Responses
+- **Status:** `403 Forbidden` - Deactivated employee
+```json
+{
+  "error": "Your account is deactivated. You cannot update your profile."
+}
+```
+- **Status:** `404 Not Found` - Employee record not found
+```json
+{
+  "error": "Employee not found"
+}
+```
