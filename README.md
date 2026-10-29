@@ -1,4 +1,4 @@
-# CoreTeam
+﻿# CoreTeam
 
 CoreTeam is a full-stack employee management dashboard built with a React + Vite frontend and an Express + MongoDB backend.
 
