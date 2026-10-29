@@ -1271,3 +1271,190 @@ Daily automated audit scheduled for **11:30 AM IST** (`06:00 UTC`). Identifies e
 4. `get-checked-in-ids`: Identifies employees who already created an attendance record today.
 5. `filter-absent`: Isolates employees not in on-leave or checked-in sets.
 6. `send-reminder-emails`: Dispatches warning emails via Nodemailer to all absent employees.
+
+
+---
+
+## 🗄 Data Models & Schemas
+
+### 1. User Model (`User.js`)
+Represents authentication and role credentials.
+
+```javascript
+{
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true }, // Bcrypt hash (salt rounds: 10)
+  role: { type: String, enum: ["Admin", "Employee"], default: "Employee", required: true }
+}
+```
+
+### 2. Employee Model (`Employee.js`)
+Primary personnel entity containing HR attributes and financial compensation.
+
+```javascript
+{
+  userId: { type: ObjectId, ref: "User", required: true, unique: true },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  email: { type: String, required: true },
+  phone: { type: String, required: true },
+  position: { type: String, required: true },
+  department: {
+    type: String,
+    enum: [
+      "Engineering", "Human Resources", "Marketing", "Sales",
+      "Finance", "Operations", "IT Support", "Customer Success",
+      "Product Management", "Design"
+    ]
+  },
+  basicSalary: { type: Number, default: 0 },
+  allowances: { type: Number, default: 0 },
+  deductions: { type: Number, default: 0 },
+  employmentStatus: { type: String, enum: ["Active", "Inactive"], default: "Active" },
+  joinDate: { type: Date, required: true },
+  isDeleted: { type: Boolean, default: false },
+  bio: { type: String, default: "" }
+}
+```
+
+### 3. Attendance Model (`Attendance.js`)
+Tracks employee check-in and check-out timestamps with compound uniqueness on `(employeeId, date)`.
+
+```javascript
+{
+  employeeId: { type: ObjectId, ref: "Employee", required: true },
+  date: { type: Date, required: true }, // Normalized to 00:00:00
+  checkIn: { type: Date, default: null },
+  checkOut: { type: Date, default: null },
+  status: { type: String, enum: ["Present", "Absent", "Late"], default: "Present" },
+  workingHours: { type: Number, default: null },
+  dayType: {
+    type: String,
+    enum: ["Full Day", "Half Day", "Three Quarter Day", "Short Day", null],
+    default: null
+  }
+}
+// Unique compound index: { employeeId: 1, date: 1 }
+```
+
+### 4. Leave Application Model (`LeaveApplication.js`)
+Records time-off requests and administrative approval decisions.
+
+```javascript
+{
+  employeeId: { type: ObjectId, ref: "Employee", required: true },
+  type: {
+    type: String,
+    enum: ["Sick", "Casual", "Annual", "SICK", "CASUAL", "ANNUAL"],
+    required: true
+  },
+  startDate: { type: Date, required: true },
+  endDate: { type: Date, required: true },
+  reason: { type: String, required: true },
+  status: { type: String, enum: ["Pending", "Approved", "Rejected"], default: "Pending" }
+}
+```
+
+### 5. Payslip Model (`Payslips.js`)
+Monthly financial statements compiled by administrators.
+
+```javascript
+{
+  employeeId: { type: ObjectId, ref: "Employee", required: true },
+  month: { type: Number, required: true }, // 1 to 12
+  year: { type: Number, required: true },
+  basicSalary: { type: Number, required: true },
+  allowances: { type: Number, default: 0 },
+  deductions: { type: Number, default: 0 },
+  netSalary: { type: Number, required: true } // basicSalary + allowances - deductions
+}
+```
+
+---
+
+## 🚦 Status Codes & Error Handling
+
+| HTTP Code | Name | Scenario |
+| :---: | :--- | :--- |
+| **`200`** | `OK` | Request succeeded; response contains payload. |
+| **`201`** | `Created` | New resource successfully persisted (`POST /api/employees`, `POST /api/payslips`, etc.). |
+| **`400`** | `Bad Request` | Validation failure, missing required body fields, or duplicate email. |
+| **`401`** | `Unauthorized` | Missing or expired JWT, incorrect password, or invalid role permissions. |
+| **`403`** | `Forbidden` | Account deactivated (`isDeleted: true`); operation blocked. |
+| **`404`** | `Not Found` | Requested employee, leave, or payslip resource does not exist. |
+| **`500`** | `Internal Server Error` | Unexpected backend runtime or database exception. |
+
+---
+
+## 🧪 cURL Testing Examples
+
+### 1. Admin Login
+```bash
+curl -X POST http://localhost:4000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@coreteam.com",
+    "password": "admin1234",
+    "role_type": "admin"
+  }'
+```
+
+### 2. Create Employee (Admin)
+```bash
+curl -X POST http://localhost:4000/api/employees \
+  -H "Authorization: Bearer <ADMIN_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "Alex",
+    "lastName": "Rivera",
+    "email": "alex.rivera@coreteam.com",
+    "password": "Password123!",
+    "phone": "+1-555-0188",
+    "position": "Backend Developer",
+    "department": "Engineering",
+    "basicSalary": 80000,
+    "allowances": 10000,
+    "deductions": 4000,
+    "joinDate": "2024-05-01"
+  }'
+```
+
+### 3. Employee Clock In
+```bash
+curl -X POST http://localhost:4000/api/attendance \
+  -H "Authorization: Bearer <EMPLOYEE_TOKEN>"
+```
+
+### 4. Apply for Leave
+```bash
+curl -X POST http://localhost:4000/api/leave/apply \
+  -H "Authorization: Bearer <EMPLOYEE_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "Annual",
+    "startDate": "2026-11-20",
+    "endDate": "2026-11-25",
+    "reason": "Annual vacation leave."
+  }'
+```
+
+### 5. Fetch Dashboard Overview
+```bash
+curl -X GET http://localhost:4000/api/dashboard \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
+### 6. Generate Payslip (Admin)
+```bash
+curl -X POST http://localhost:4000/api/payslips \
+  -H "Authorization: Bearer <ADMIN_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "employeeId": "<EMPLOYEE_OBJECT_ID>",
+    "month": 10,
+    "year": 2026,
+    "basicSalary": 80000,
+    "allowances": 10000,
+    "deductions": 4000
+  }'
+```
